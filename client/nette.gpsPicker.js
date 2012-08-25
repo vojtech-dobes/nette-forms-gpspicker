@@ -15,8 +15,6 @@ var google = window.google;
 var $ = window.jQuery;
 var Nette = window.Nette;
 
-// Simple common functions
-
 var GpsPicker = function () {
 	var that = this;
 	var handlers = {};
@@ -30,9 +28,12 @@ var GpsPicker = function () {
 			var $el = $(this);
 			var options = parseDataAttribute(this);
 
+			var x = options.size.x;
+			var y = options.size.y;
+
 			var $mapContainer = $('<div>', {
-				width: options.size.x + 'px',
-				height: options.size.y + 'px',
+				width: typeof x == 'number' ? x + 'px' : x,
+				height: typeof y == 'number' ? y + 'px' : y,
 				position: 'relative'
 			}).prependTo($el);
 

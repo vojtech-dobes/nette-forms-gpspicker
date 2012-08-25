@@ -170,8 +170,8 @@ abstract class GpsPicker extends BaseControl
 	public function setSize($x, $y)
 	{
 		$this->size = array(
-			'x' => $x . (is_numeric($x) ? 'px' : ''),
-			'y' => $y . (is_numeric($y) ? 'px' : ''),
+			'x' => $x ?: ($x === 0 ? 0 : $this->size['x']),
+			'y' => $y ?: ($y === 0 ? 0 : $this->size['y']),
 		);
 
 		return $this;
@@ -179,6 +179,12 @@ abstract class GpsPicker extends BaseControl
 
 
 
+	/**
+	 * Sets default zoom
+	 *
+	 * @param  int
+	 * @return GpsPicker provides a fluent interface
+	 */
 	public function setZoom($zoom)
 	{
 		$this->zoom = (int) $zoom ?: self::DEFAULT_ZOOM;
@@ -188,6 +194,12 @@ abstract class GpsPicker extends BaseControl
 
 
 
+	/**
+	 * Sets default type of map
+	 *
+	 * @param  string self::TYPE_*
+	 * @return provides a fluent interface
+	 */
 	public function setType($type)
 	{
 		$this->type = (string) $type;
