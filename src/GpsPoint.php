@@ -30,7 +30,7 @@ class GpsPoint extends Nette\Object
 		if (is_array($lat)) {
 			$lng = $lat['lng'];
 			$lat = $lat['lat'];
-		} else ($lng === NULL) {
+		} elseif ($lng === NULL) {
 			throw new Nette\InvalidArgumentException('GpsPoint must accept latitude AND longitude, or array with "lat" and "lng" keys.');
 		}
 		$this->lat = (float) $lat;

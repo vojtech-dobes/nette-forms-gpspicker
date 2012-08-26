@@ -254,6 +254,6 @@ abstract class GpsPicker extends BaseControl
 	 *
 	 * @return
 	 */
-	abstract protected function createValue();
+	abstract protected function createValue($args);
 
 }
