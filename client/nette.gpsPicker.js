@@ -50,7 +50,9 @@ var GpsPicker = function () {
 
 	this.registerHandler = function (type, handler, callback) {
 		handlers[type] = handler;
-		callback(Nette);
+		if (Nette) {
+			callback(Nette);
+		}
 	};
 };
 
