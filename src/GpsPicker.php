@@ -18,6 +18,17 @@ use Traversable;
 abstract class GpsPicker extends BaseControl
 {
 
+	/** string validation rules */
+	const MAX_LAT = ':maxLat';
+	const MAX_LNG = ':maxLng';
+	const MIN_LAT = ':minLat';
+	const MIN_LNG = ':minLng';
+	const MAX_DISTANCE_FROM = ':maxDistanceFrom';
+	const MIN_DISTANCE_FROM = ':minDistanceFrom';
+
+	/** float */
+	const GREAT_CIRCLE_RADIUS = 6372.795;
+
 	/** string */
 	const TYPE_ROADMAP = 'ROADMAP';
 	const TYPE_SATELLITE = 'SATELLITE';
@@ -107,13 +118,17 @@ abstract class GpsPicker extends BaseControl
 		$name = $control->name;
 
 		$value = $this->getValue();
+		$rules = self::exportRules($this->rules);
 
-		foreach ($this->getParts() as $part => $title) {
+		foreach ($this->getParts() as $part => $options) {
 			$control->id = "$id-$part";
 			$control->name = $name . "[$part]";
 			$control->type = 'number';
 			$control->class[] = "gpspicker-$part";
 			$control->value = $value->$part;
+			$control->data('nette-rules', $this->prepareDataAttributes(array_values(array_filter($rules, function ($rule) use ($options) {
+				return in_array($rule['op'], $options['rules']);
+			}))) ?: NULL);
 			$container->add((string) $control);
 		}
 
@@ -146,6 +161,29 @@ abstract class GpsPicker extends BaseControl
 		$data = preg_replace('#"([a-z0-9]+)":#i', '$1:', $data);
 		$data = preg_replace('#(?<!\\\\)"([^\\\\\',]*)"#i', "'$1'", $data);
 		return substr($data, 1, -1);
+	}
+
+
+
+	/**
+	 * Calculates distance of two GPS coordinates
+	 *
+	 * @author Jakub Vrána
+	 * @link   http://php.vrana.cz/vzdalenost-dvou-zemepisnych-bodu.php
+	 *
+	 * @param  float
+	 * @param  float
+	 * @param  float
+	 * @param  float
+	 * @return float distance in metres
+	 */
+	protected static function calculateDistance($lat1, $lat2, $lng1, $lng2)
+	{
+		return acos(
+			cos(deg2rad($lat1))*cos(deg2rad($lng1))*cos(deg2rad($lat2))*cos(deg2rad($lng2))
+			+ cos(deg2rad($lat1))*sin(deg2rad($lng1))*cos(deg2rad($lat2))*sin(deg2rad($lng2))
+			+ sin(deg2rad($lat1))*sin(deg2rad($lat2))
+		) * self::GREAT_CIRCLE_RADIUS * 1000;
 	}
 
 

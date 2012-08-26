@@ -44,8 +44,9 @@ var GpsPicker = function () {
 		});
 	});
 
-	this.registerHandler = function (type, handler) {
+	this.registerHandler = function (type, handler, callback) {
 		handlers[type] = handler;
+		callback(Nette);
 	};
 };
 
@@ -71,6 +72,21 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 		$latInput.val(e.latLng.lat());
 		$lngInput.val(e.latLng.lng());
 	});
+}, function (Nette) {
+	Nette.validators.maxLat = function (elem, arg, value) {
+		return value <= arg;
+	};
+	Nette.validators.maxLng = function (elem, arg, value) {
+		console.log(value, arg);
+		return value <= arg;
+	};
+	Nette.validators.minLat = function (elem, arg, value) {
+		console.log(value, arg);
+		return value >= arg;
+	};
+	Nette.validators.minLng = function (elem, arg, value) {
+		return value >= arg;
+	};
 });
 
 })(window);
