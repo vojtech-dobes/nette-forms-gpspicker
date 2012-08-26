@@ -15,6 +15,10 @@ var google = window.google;
 var $ = window.jQuery;
 var Nette = window.Nette;
 
+if (!google || !$) {
+	return;
+}
+
 var GpsPicker = function () {
 	var that = this;
 	var handlers = {};
