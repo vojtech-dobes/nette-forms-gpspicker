@@ -83,15 +83,17 @@ class GpsPositionPicker extends GpsPicker
 
 
 
-	public static function validateMaxDistanceFrom(IControl $control, $point, $distance)
+	public static function validateMaxDistanceFrom(IControl $control, array $args)
 	{
+		list($distance, $point) = $args;
 		return $control->getValue()->getDistanceTo(new GpsPoint($point)) <= $distance;
 	}
 
 
 
-	public static function validateMinDistanceFrom(IControl $control, $point, $distance)
+	public static function validateMinDistanceFrom(IControl $control, array $args)
 	{
+		list($distance, $point) = $args;
 		return $control->getValue()->getDistanceTo(new GpsPoint($point)) >= $distance;
 	}
 
