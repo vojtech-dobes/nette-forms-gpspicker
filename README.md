@@ -44,7 +44,7 @@ $form->addGpsPicker('coords', array(
 ));
 ```
 
-Returned value is instance of `stdClass` with `lat` and `lng` keys.
+Returned value is instance of `GpsPoint` with `lat` and `lng` properties. It inherits from `Nette\Object`.
 
 ```php
 $lat = $form->values->coords->lat;

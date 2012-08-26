@@ -100,7 +100,7 @@ abstract class GpsPicker extends BaseControl
 	 */
 	public function getValue()
 	{
-		return (object) array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $this->getParts());
+		return $this->createValue(array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $this->getParts()));
 	}
 
 
@@ -161,29 +161,6 @@ abstract class GpsPicker extends BaseControl
 		$data = preg_replace('#"([a-z0-9]+)":#i', '$1:', $data);
 		$data = preg_replace('#(?<!\\\\)"([^\\\\\',]*)"#i', "'$1'", $data);
 		return substr($data, 1, -1);
-	}
-
-
-
-	/**
-	 * Calculates distance of two GPS coordinates
-	 *
-	 * @author Jakub Vrána
-	 * @link   http://php.vrana.cz/vzdalenost-dvou-zemepisnych-bodu.php
-	 *
-	 * @param  float
-	 * @param  float
-	 * @param  float
-	 * @param  float
-	 * @return float distance in metres
-	 */
-	protected static function calculateDistance($lat1, $lat2, $lng1, $lng2)
-	{
-		return acos(
-			cos(deg2rad($lat1))*cos(deg2rad($lng1))*cos(deg2rad($lat2))*cos(deg2rad($lng2))
-			+ cos(deg2rad($lat1))*sin(deg2rad($lng1))*cos(deg2rad($lat2))*sin(deg2rad($lng2))
-			+ sin(deg2rad($lat1))*sin(deg2rad($lat2))
-		) * self::GREAT_CIRCLE_RADIUS * 1000;
 	}
 
 
@@ -269,5 +246,14 @@ abstract class GpsPicker extends BaseControl
 	 * @return array
 	 */
 	abstract protected function getDefaultValue();
+
+
+
+	/**
+	 * Should create instance of correct value representation
+	 *
+	 * @return
+	 */
+	abstract protected function createValue();
 
 }
