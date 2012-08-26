@@ -50,3 +50,29 @@ Returned value is instance of `stdClass` with `lat` and `lng` keys.
 $lat = $form->values->coords->lat;
 $lng = $form->values->coords->lng;
 ```
+
+### Validation
+
+```php
+use VojtechDobes\NetteForms\GpsPicker as Gps;
+```
+
+Now you can easily add various constraints on desired GPS:
+
+```php
+$form->addGpsPicker('coords')
+	->addRule(Gps::MIN_LAT, 'Minimal latitude must be %f.', 20)
+	->addRule(Gps::MIN_LNG, 'Minimal longitude must be %f.', 40)
+	->addRule(Gps::MAX_LAT, 'Maximum latitude must be %f.', 20)
+	->addRule(Gps::MAX_LNG, 'Maximum longitude must be %f.', 40)
+	->addRule(Gps::MIN_DISTANCE_FROM, 'Minimal distance from Prague must be %i m.', array(
+		'lat' => 50.083,
+		'lng' => 14.423,
+	), 15000);
+	->addRule(Gps::MAX_DISTANCE_FROM, 'Maximum distance from Prague must be %i m.', array(
+		'lat' => 50.083,
+		'lng' => 14.423,
+	), 100000);
+```
+
+First four rules will be also validated client-side.
