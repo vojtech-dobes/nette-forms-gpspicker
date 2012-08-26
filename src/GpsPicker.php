@@ -18,11 +18,13 @@ use Traversable;
 abstract class GpsPicker extends BaseControl
 {
 
+	/** string */
 	const TYPE_ROADMAP = 'ROADMAP';
 	const TYPE_SATELLITE = 'SATELLITE';
 	const TYPE_HYBRID = 'HYBRID';
 	const TYPE_TERRAIN = 'TERRAIN';
 
+	/** int */
 	const DEFAULT_ZOOM = 8;
 	const DEFAULT_SIZE_X = 400;
 	const DEFAULT_SIZE_Y = 300;
@@ -80,23 +82,15 @@ abstract class GpsPicker extends BaseControl
 
 
 
-/* === Value ================================================================ */
-
-
-
 	/**
 	 * Returns coordinates enveloped in Gps instance
 	 * 
-	 * @return Geography\Gps
+	 * @return \stdClass
 	 */
 	public function getValue()
 	{
 		return (object) array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $this->getParts());
 	}
-
-
-
-/* === Rendering ============================================================ */
 
 
 
@@ -206,5 +200,36 @@ abstract class GpsPicker extends BaseControl
 
 		return $this;
 	}
+
+
+
+/* === Interface ============================================================ */
+
+
+
+	/**
+	 * Should return identifier of proper JS handler
+	 *
+	 * @return string
+	 */
+	abstract protected function getShape();
+
+
+
+	/**
+	 * Should return array of partial inputs
+	 *
+	 * @return string[] [name => label]
+	 */
+	abstract protected function getParts();
+
+
+
+	/**
+	 * Should return default value
+	 *
+	 * @return array
+	 */
+	abstract protected function getDefaultValue();
 
 }
