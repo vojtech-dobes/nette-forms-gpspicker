@@ -13,7 +13,7 @@ Nette 2.0.0
 ## Installation
 
 1. Get the source code from Github.
-2. Register in bootstrap via `VojtechDobes\NetteForms\GpsPositionPicker::register();`.
+2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension for `$configurator`.
 3. Link Google Maps API v3 and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
 
 ## Usage
@@ -76,3 +76,20 @@ $form->addGpsPicker('coords')
 ```
 
 First four rules will be also validated client-side.
+
+### Manual rendering
+
+If the user doesn't support Javascript or gets offline, picker provides several inputs for setting coordinates manually. You can easily render them manually as well as whole complete element.
+
+```html
+{form formName}
+	...
+
+	{gpspicker coords}
+		{label lat}Latitude:{/label} {input lat}
+		{label lng}Longitude:{/label} {input lng}
+	{/gpspicker}
+{/form}
+```
+
+Keep on mind that you cannot render any other inputs inside of `{gpspicker}` macro.

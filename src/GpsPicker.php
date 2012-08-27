@@ -62,6 +62,12 @@ abstract class GpsPicker extends BaseControl
 	 */
 	private $type = self::DEFAULT_TYPE;
 
+	/**
+	 * Exported rules
+	 * @var array
+	 */
+	private $exportedRules;
+
 
 
 	/**
@@ -110,26 +116,17 @@ abstract class GpsPicker extends BaseControl
 	 * 
 	 * @return Html
 	 */
-	public function getControl()
+	public function getControl($onlyContainer = FALSE)
 	{
 		$control = parent::getControl();
 		$container = Html::el('div');
 		$id = $control->id;
 		$name = $control->name;
 
-		$value = $this->getValue();
-		$rules = self::exportRules($this->rules);
-
-		foreach ($this->getParts() as $part => $options) {
-			$control->id = "$id-$part";
-			$control->name = $name . "[$part]";
-			$control->type = 'number';
-			$control->class[] = "gpspicker-$part";
-			$control->value = $value->$part;
-			$control->data('nette-rules', $this->prepareDataAttributes(array_values(array_filter($rules, function ($rule) use ($options) {
-				return in_array($rule['op'], $options['rules']);
-			}))) ?: NULL);
-			$container->add((string) $control);
+		if (!$onlyContainer) {
+			foreach ($this->getParts() as $part => $options) {
+				$container->add((string) $this->getPartialControl($part));
+			}
 		}
 
 		$container->data('nette-gpspicker', $this->prepareDataAttributes(array(
@@ -143,6 +140,59 @@ abstract class GpsPicker extends BaseControl
 		)));
 
 		return $container;
+	}
+
+
+
+	public function getPartialControl($name)
+	{
+		$parts = $this->getParts();
+		if (!isset($parts[$name])) {
+			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
+		}
+		$options = $parts[$name];
+
+		$value = $this->getValue();
+		$rules = $this->getExportedRules();
+
+		$control = clone parent::getControl();
+		$control->id = "{$control->id}-$name";
+		$control->name = $control->name . "[$name]";
+		$control->type = 'number';
+		$control->class[] = "gpspicker-$name";
+		$control->value = $value->$name;
+		$control->data('nette-rules', $this->prepareDataAttributes(array_values(array_filter($rules, function ($rule) use ($options) {
+			return in_array($rule['op'], $options['rules']);
+		}))) ?: NULL);
+
+		return $control;
+	}
+
+
+
+	public function getPartialLabel($name)
+	{
+		$parts->getParts();
+		if (!isset($parts[$name])) {
+			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
+		}
+		$caption = $parts[$name]['label'];
+
+		$label = clone parent::getLabel();
+		$label->for = $label->for . '-' . $name;
+		$label->setText($this->translate($caption));
+
+		return $label;
+	}
+
+
+
+	private function getExportedRules()
+	{
+		if (!isset($this->exportedRules)) {
+			$this->exportedRules = self::exportRules($this->rules);
+		}
+		return $this->exportedRules;
 	}
 
 
