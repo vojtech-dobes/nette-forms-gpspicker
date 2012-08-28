@@ -78,6 +78,22 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 		$latInput.val(e.latLng.lat());
 		$lngInput.val(e.latLng.lng());
 	});
+
+	var timeout;
+	google.maps.event.addListener(map, 'click', function (e) {
+		timeout = setTimeout(function () {
+			marker.setPosition(e.latLng);
+			marker.setMap(map);
+			$latInput.val(e.latLng.lat());
+			$lngInput.val(e.latLng.lng());
+		}, 200);
+	});
+	google.maps.event.addListener(map, 'dblclick', function (e) {
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = null;
+		}
+	});
 }, function (Nette) {
 	Nette.validators.maxLat = function (elem, arg, value) {
 		return value <= arg;
