@@ -12,7 +12,7 @@ Nette 2.0.0
 
 ## Installation
 
-1. Get the source code from Github.
+1. Get the source code from Github or via Composer (`vojtech-dobes/nette-forms-gpspicker`).
 2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension for `$configurator`.
 3. Link Google Maps API v3 (Places) and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
 
@@ -34,7 +34,7 @@ $configurator->onCompile[] = function ($configurator, $compiler) {
 $form->addGpsPicker('coords', 'Coordinates:');
 ```
 
-You can add some options:
+You can add some options (every option has also some like setter thing):
 
 ```php
 $form->addGpsPicker('coords', 'Coordinates:', array(
@@ -43,7 +43,7 @@ $form->addGpsPicker('coords', 'Coordinates:', array(
 	'size' => array(
 		'x' => 411,
 		'y' => 376,
-	)
+	),
 ));
 ```
 
@@ -104,14 +104,14 @@ If the user doesn't support Javascript or gets offline, picker provides several 
 {/form}
 ```
 
-Keep on mind that you cannot render any other inputs inside of `{gpspicker}` macro.
+Keep in mind that you cannot render any other inputs inside of `{gpspicker}` macro.
 
-### Search address
+### Search by address
 
-Enabled by default, GpsPicker supports searching map by typing the address. Map will be prepended by extra `<input>` element,
-which will provide Google Places Autocomplete service.
+Enabled by default, GpsPicker supports searching map by typing the address. Extra `<input>` element will be prepended to map,
+enhanced by Google Places Autocomplete service.
 
-If you would like to render it manually, use this:
+If you like to render it manually, use `search` key:
 
 ```html
 {gpspicker coords}
@@ -119,7 +119,7 @@ If you would like to render it manually, use this:
 {/gpspicker}
 ```
 
-You can disable search feature:
+You can disable/enable search feature with `enableSearch`/`disableSearch` pair of methods:
 
 ```php
 $form->addGpsPicker('coords', 'Coordinates:')
@@ -134,4 +134,4 @@ $form->addGpsPicker('coords', 'Coordinates:', array(
 ));
 ```
 
-Keep on mind that provided address is not sent to server.
+Keep in mind that provided address is not sent to server.
