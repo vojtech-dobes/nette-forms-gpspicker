@@ -63,6 +63,15 @@ abstract class GpsPicker extends BaseControl
 	private $type = self::DEFAULT_TYPE;
 
 	/**
+	 * Should be address input shown?
+	 * @var bool
+	 */
+	private $showSearch = TRUE;
+
+	/** @var Html */
+	private $searchControlPrototype;
+
+	/**
 	 * Exported rules
 	 * @var array
 	 */
@@ -89,6 +98,9 @@ abstract class GpsPicker extends BaseControl
 		$options = (array) $options;
 		if (isset($options['size'])) {
 			$this->setSize($options['size']['x'], $options['size']['y']);
+		}
+		if (isset($options['search'])) {
+			$this->showSearch = (bool) $options['search'];
 		}
 		foreach (array('zoom', 'type') as $key) {
 			if (isset($options[$key])) {
@@ -124,6 +136,10 @@ abstract class GpsPicker extends BaseControl
 		$name = $control->name;
 
 		if (!$onlyContainer) {
+			if ($this->showSearch) {
+				$container->add((string) $this->getSearchControlPrototype());
+			}
+
 			foreach ($this->getParts() as $part => $options) {
 				$container->add((string) $this->getPartialControl($part));
 			}
@@ -136,6 +152,7 @@ abstract class GpsPicker extends BaseControl
 			),
 			'zoom' => $this->zoom,
 			'type' => $this->type,
+			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
 		)));
 
@@ -146,6 +163,10 @@ abstract class GpsPicker extends BaseControl
 
 	public function getPartialControl($name)
 	{
+		if ($name == 'search') {
+			return $this->getSearchControlPrototype();
+		}
+
 		$parts = $this->getParts();
 		if (!isset($parts[$name])) {
 			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
@@ -172,6 +193,13 @@ abstract class GpsPicker extends BaseControl
 
 	public function getPartialLabel($name)
 	{
+		if ($name == 'search') {
+			$label = clone parent::getLabel();
+			$label->for = $label->for . '-search';
+			$label->setText($this->translate('Address'));
+			return $label;
+		}
+
 		$parts->getParts();
 		if (!isset($parts[$name])) {
 			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
@@ -183,6 +211,23 @@ abstract class GpsPicker extends BaseControl
 		$label->setText($this->translate($caption));
 
 		return $label;
+	}
+
+
+
+	public function getSearchControlPrototype()
+	{
+		if (!$this->searchControlPrototype) {
+			$control = parent::getControl();
+			$this->searchControlPrototype = Html::el('input', array(
+				'type' => 'text',
+				'id' => $control->id . '-search',
+				'name' => $control->name . '[search]',
+				'class' => 'gpspicker-search',
+				'style' => 'display:none',
+			));
+		}
+		return $this->searchControlPrototype;
 	}
 
 
@@ -262,6 +307,34 @@ abstract class GpsPicker extends BaseControl
 	public function setType($type)
 	{
 		$this->type = (string) $type;
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Enables input for address search
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function enableSearch()
+	{
+		$this->showSearch = TRUE;
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Disables input for address search
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function disableSearch()
+	{
+		$this->showSearch = FALSE;
 
 		return $this;
 	}

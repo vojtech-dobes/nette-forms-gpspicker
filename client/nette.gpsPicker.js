@@ -40,9 +40,22 @@ var GpsPicker = function () {
 				height: typeof y == 'number' ? y + 'px' : y,
 				position: 'relative'
 			}).prependTo($el);
-
+			var $inputs = $el.find('input:not([id$=search])').hide();
 			$el.find('label').hide();
-			new handlers[options.shape]($el, $el.find('input').hide(), new google.maps.Map($mapContainer[0], {
+
+			if (options.search) {
+				var $search = $el.find('[id$=search]');
+				if ($search.length) {
+					$search.show();
+				} else {
+					$search = $('<input>', {
+						type: 'text'
+					}).prependTo($el);
+				}
+				options.search = new google.maps.places.Autocomplete($search[0], {});
+			}
+
+			new handlers[options.shape]($el, $inputs, new google.maps.Map($mapContainer[0], {
 				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
 			}), options);
 		});
@@ -94,6 +107,24 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 			timeout = null;
 		}
 	});
+
+	if (options.search) {
+		google.maps.event.addListener(options.search, 'place_changed', function () {
+			var place = options.search.getPlace();
+			if (!place.geometry) return;
+
+			var location = place.geometry.location;
+			if (place.geometry.viewport) {
+				map.fitBounds(place.geometry.viewport);
+			} else {
+				map.setCenter(location);
+				map.setZoom(17);
+			}
+			marker.setPosition(location);
+			$latInput.val(location.lat());
+			$lngInput.val(location.lng());
+		});
+	}
 }, function (Nette) {
 	Nette.validators.maxLat = function (elem, arg, value) {
 		return value <= arg;

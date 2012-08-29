@@ -14,7 +14,19 @@ Nette 2.0.0
 
 1. Get the source code from Github.
 2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension for `$configurator`.
-3. Link Google Maps API v3 and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
+3. Link Google Maps API v3 (Places) and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
+
+```php
+$configurator->onCompile[] = function ($configurator, $compiler) {
+	$compiler->addExtension('gpspicker', new VojtechDobes\NetteForms\GpsPickerExtension);
+};
+```
+
+```html
+	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+	<script type="text/javascript" src="{$basePath}/libs/nette.gpsPicker.js"></script>
+</body>
+```
 
 ## Usage
 
@@ -93,3 +105,33 @@ If the user doesn't support Javascript or gets offline, picker provides several 
 ```
 
 Keep on mind that you cannot render any other inputs inside of `{gpspicker}` macro.
+
+### Search address
+
+Enabled by default, GpsPicker supports searching map by typing the address. Map will be prepended by extra `<input>` element,
+which will provide Google Places Autocomplete service.
+
+If you would like to render it manually, use this:
+
+```html
+{gpspicker coords}
+	{label search /} {input search}
+{/gpspicker}
+```
+
+You can disable search feature:
+
+```php
+$form->addGpsPicker('coords', 'Coordinates:')
+	->disableSearch();
+```
+
+Or in constructor:
+
+```php
+$form->addGpsPicker('coords', 'Coordinates:', array(
+	'search' => FALSE,
+));
+```
+
+Keep on mind that provided address is not sent to server.
