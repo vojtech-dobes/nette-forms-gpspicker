@@ -77,11 +77,11 @@ $form->addGpsPicker('coords')
 	->addRule(Gps::MIN_LNG, 'Minimal longitude must be %f.', 40)
 	->addRule(Gps::MAX_LAT, 'Maximum latitude must be %f.', 20)
 	->addRule(Gps::MAX_LNG, 'Maximum longitude must be %f.', 40)
-	->addRule(Gps::MIN_DISTANCE_FROM, 'Minimal distance from Prague must be %i m.', array(15000, array(
+	->addRule(Gps::MIN_DISTANCE_FROM, 'Minimal distance from Prague must be %d m.', array(15000, array(
 		'lat' => 50.083,
 		'lng' => 14.423,
 	)));
-	->addRule(Gps::MAX_DISTANCE_FROM, 'Maximum distance from Prague must be %i m.', array(100000, array(
+	->addRule(Gps::MAX_DISTANCE_FROM, 'Maximum distance from Prague must be %d m.', array(100000, array(
 		'lat' => 50.083,
 		'lng' => 14.423,
 	)));
