@@ -199,8 +199,8 @@ abstract class GpsPicker extends BaseControl
 			$label->setText($this->translate('Address'));
 			return $label;
 		}
-
-		$parts->getParts();
+		
+		$parts = $this->getParts();
 		if (!isset($parts[$name])) {
 			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
 		}
