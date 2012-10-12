@@ -46,7 +46,7 @@ class GpsPositionPicker extends GpsPicker
 
 	protected function createValue($args)
 	{
-		return new GpsPoint($args['lat'], $args['lng']);
+		return new GpsPoint($args['lat'], $args['lng'], isset($args['search']) ? $args['search'] : NULL);
 	}
 
 

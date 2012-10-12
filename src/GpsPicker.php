@@ -68,6 +68,12 @@ abstract class GpsPicker extends BaseControl
 	 */
 	private $showSearch = TRUE;
 
+	/**
+	 * Should be address returned?
+	 * @var bool
+	 */
+	private $addressRetrieval = FALSE;
+
 	/** @var Html */
 	private $searchControlPrototype;
 
@@ -118,7 +124,11 @@ abstract class GpsPicker extends BaseControl
 	 */
 	public function getValue()
 	{
-		return $this->createValue(array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $this->getParts()));
+		$filter = $this->getParts();
+		if ($this->addressRetrieval) {
+			$filter['search'] = TRUE;
+		}
+		return $this->createValue(array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $filter));
 	}
 
 
@@ -316,11 +326,13 @@ abstract class GpsPicker extends BaseControl
 	/**
 	 * Enables input for address search
 	 *
+	 * @param  bool if TRUE, address will be also returned
 	 * @return GpsPicker provides a fluent interface
 	 */
-	public function enableSearch()
+	public function enableSearch($addressRetrieval = FALSE)
 	{
 		$this->showSearch = TRUE;
+		$this->addressRetrieval = (bool) $addressRetrieval;
 
 		return $this;
 	}
