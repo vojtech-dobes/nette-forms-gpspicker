@@ -27,10 +27,14 @@ var GpsPicker = function () {
 		return eval('[{' + (el.getAttribute('data-nette-gpspicker') || '') + '}]')[0];
 	};
 
-	this.load = function () {
-		return $('[data-nette-gpspicker]').each(function () {
-			that.initialize(this);
+	$.fn.gpspicker = function (options) {
+		return this.each(function () {
+			that.initialize(this, options);
 		});
+	};
+
+	this.load = function () {
+		return $('[data-nette-gpspicker]').gpspicker();
 	};
 
 	this.initialize = function (el, options) {
