@@ -33,11 +33,11 @@ var GpsPicker = function () {
 		});
 	};
 
-	this.initialize = function (el) {
+	this.initialize = function (el, options) {
 		var $el = $(el);
 		if ($el.data('gpspicker')) return;
 
-		var options = parseDataAttribute(el);
+		var options = $.extend(parseDataAttribute(el), options || {});
 
 		var x = options.size.x;
 		var y = options.size.y;
