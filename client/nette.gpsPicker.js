@@ -139,6 +139,21 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 			$lngInput.val(location.lng());
 		});
 	}
+
+	return {
+		marker: marker,
+		getValue: function () {
+			return {
+				lat: $latInput.val(),
+				lng: $lngInput.val()
+			};
+		},
+		setValue: function (lat, lng) {
+			$latInput.val(lat * 1);
+			$lngInput.val(lng * 1);
+			marker.setPosition(new google.maps.LatLng(lat * 1, lng * 1));
+		}
+	};
 }, function (Nette) {
 	Nette.validators.maxLat = function (elem, arg, value) {
 		return value <= arg;
