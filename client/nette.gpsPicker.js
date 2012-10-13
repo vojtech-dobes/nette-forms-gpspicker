@@ -55,9 +55,13 @@ var GpsPicker = function () {
 				options.search = new google.maps.places.Autocomplete($search[0], {});
 			}
 
-			new handlers[options.shape]($el, $inputs, new google.maps.Map($mapContainer[0], {
+			var map = new google.maps.Map($mapContainer[0], {
 				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
-			}), options);
+			});
+
+			$el.data('gpspicker', $.extend({
+				map: map
+			}, new handlers[options.shape]($el, $inputs, map, options) || {}));
 		});
 	});
 
