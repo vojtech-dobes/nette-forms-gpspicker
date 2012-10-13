@@ -27,43 +27,47 @@ var GpsPicker = function () {
 		return eval('[{' + (el.getAttribute('data-nette-gpspicker') || '') + '}]')[0];
 	};
 
-	$(function () {
-		$('[data-nette-gpspicker]').each(function () {
-			var $el = $(this);
-			var options = parseDataAttribute(this);
-
-			var x = options.size.x;
-			var y = options.size.y;
-
-			var $mapContainer = $('<div>', {
-				width: typeof x == 'number' ? x + 'px' : x,
-				height: typeof y == 'number' ? y + 'px' : y,
-				position: 'relative'
-			}).prependTo($el);
-			var $inputs = $el.find('input:not([id$=search])').hide();
-			$el.find('label').hide();
-
-			if (options.search) {
-				var $search = $el.find('[id$=search]');
-				if ($search.length) {
-					$search.show();
-				} else {
-					$search = $('<input>', {
-						type: 'text'
-					}).prependTo($el);
-				}
-				options.search = new google.maps.places.Autocomplete($search[0], {});
-			}
-
-			var map = new google.maps.Map($mapContainer[0], {
-				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
-			});
-
-			$el.data('gpspicker', $.extend({
-				map: map
-			}, new handlers[options.shape]($el, $inputs, map, options) || {}));
+	this.load = function () {
+		return $('[data-nette-gpspicker]').each(function () {
+			that.initialize(this);
 		});
-	});
+	};
+
+	this.initialize = function (el) {
+		var $el = $(el);
+		var options = parseDataAttribute(el);
+
+		var x = options.size.x;
+		var y = options.size.y;
+
+		var $mapContainer = $('<div>', {
+			width: typeof x == 'number' ? x + 'px' : x,
+			height: typeof y == 'number' ? y + 'px' : y,
+			position: 'relative'
+		}).prependTo($el);
+		var $inputs = $el.find('input:not([id$=search])').hide();
+		$el.find('label').hide();
+
+		if (options.search) {
+			var $search = $el.find('[id$=search]');
+			if ($search.length) {
+				$search.show();
+			} else {
+				$search = $('<input>', {
+					type: 'text'
+				}).prependTo($el);
+			}
+			options.search = new google.maps.places.Autocomplete($search[0], {});
+		}
+
+		var map = new google.maps.Map($mapContainer[0], {
+			mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
+		});
+
+		return $el.data('gpspicker', $.extend({
+			map: map
+		}, new handlers[options.shape]($el, $inputs, map, options) || {}));
+	};
 
 	this.registerHandler = function (type, handler, callback) {
 		handlers[type] = handler;
@@ -71,6 +75,10 @@ var GpsPicker = function () {
 			callback(Nette);
 		}
 	};
+
+	$(function () {
+		that.load();
+	});
 };
 
 var GpsPicker = window.NetteGpsPicker = window.NetteGpsPicker || new GpsPicker();
