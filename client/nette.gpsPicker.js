@@ -35,6 +35,8 @@ var GpsPicker = function () {
 
 	this.initialize = function (el) {
 		var $el = $(el);
+		if ($el.data('gpspicker')) return;
+
 		var options = parseDataAttribute(el);
 
 		var x = options.size.x;
