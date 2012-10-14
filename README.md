@@ -1,14 +1,18 @@
 ## For Nette Framework
 
-Google Maps based coordinates picker
+Google Maps based coordinates picker. [Try it now!](http://vojtechdobes.com/gpspicker/)
 
-## License
+##### License
 
 New BSD
 
-## Dependencies
+##### Dependencies
 
 Nette 2.0.0
+
+##### Demo
+
+http://vojtechdobes.com/gpspicker/
 
 ## Installation
 
