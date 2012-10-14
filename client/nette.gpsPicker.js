@@ -38,8 +38,8 @@ var GpsPicker = function () {
 	};
 
 	this.initialize = function (el, options) {
-		var $el = $(el);
-		if ($el.data('gpspicker')) return;
+		var $el = $(el), gpspicker;
+		if (gpspicker = $el.data('gpspicker')) return gpspicker;
 
 		var options = $.extend(parseDataAttribute(el), options || {});
 
