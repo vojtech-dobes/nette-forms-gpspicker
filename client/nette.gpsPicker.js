@@ -93,6 +93,12 @@ var GpsPicker = window.NetteGpsPicker = window.NetteGpsPicker || new GpsPicker()
 GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 	var $latInput = $inputs.filter('[id$=lat]');
 	var $lngInput = $inputs.filter('[id$=lng]');
+	var trigger = function (lat, lng) {
+		$el.trigger('change.gpspicker', [{
+			lat: lat,
+			lng: lng
+		}]);
+	};
 
 	var position = new google.maps.LatLng($latInput.val() * 1, $lngInput.val() * 1);
 
@@ -108,6 +114,7 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 	google.maps.event.addListener(marker, 'mouseup', function (e) {
 		$latInput.val(e.latLng.lat());
 		$lngInput.val(e.latLng.lng());
+		trigger(e.latLng.lat(), e.latLng.lng());
 	});
 
 	var timeout;
@@ -117,6 +124,7 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 			marker.setMap(map);
 			$latInput.val(e.latLng.lat());
 			$lngInput.val(e.latLng.lng());
+			trigger(e.latLng.lat(), e.latLng.lng());
 		}, 200);
 	});
 	google.maps.event.addListener(map, 'dblclick', function (e) {
@@ -141,6 +149,7 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 			marker.setPosition(location);
 			$latInput.val(location.lat());
 			$lngInput.val(location.lng());
+			trigger(location.lat(), location.lng());
 		});
 	}
 
@@ -153,9 +162,12 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 			};
 		},
 		setValue: function (lat, lng) {
-			$latInput.val(lat * 1);
-			$lngInput.val(lng * 1);
-			marker.setPosition(new google.maps.LatLng(lat * 1, lng * 1));
+			lat = lat * 1;
+			lng = lng * 1;
+			$latInput.val(lat);
+			$lngInput.val(lng);
+			marker.setPosition(new google.maps.LatLng(lat, lng));
+			trigger(lat, lng);
 		}
 	};
 }, function (Nette) {
