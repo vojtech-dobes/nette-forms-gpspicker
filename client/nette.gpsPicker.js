@@ -68,6 +68,7 @@ var GpsPicker = function () {
 
 		var map = new google.maps.Map($mapContainer[0], {
 			mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
+			, draggable: !options.disabled
 		});
 
 		return $el.data('gpspicker', $.extend({
@@ -105,7 +106,7 @@ GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
 	var marker = new google.maps.Marker({
 		position: position,
 		map: map,
-		draggable: true
+		draggable: !options.disabled
 	});
 
 	map.setCenter(position);
