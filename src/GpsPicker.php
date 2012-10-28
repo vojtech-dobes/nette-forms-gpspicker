@@ -83,6 +83,11 @@ abstract class GpsPicker extends BaseControl
 	 */
 	private $exportedRules;
 
+	/**
+	 * Is the input disabled or not
+	 * @var bool
+	 */
+	private $disabled = FALSE;
 
 
 	/**
@@ -107,6 +112,9 @@ abstract class GpsPicker extends BaseControl
 		}
 		if (isset($options['search'])) {
 			$this->showSearch = (bool) $options['search'];
+		}
+		if (isset($options['disabled'])) {
+			$this->disabled = (bool) $options['disabled'];
 		}
 		foreach (array('zoom', 'type') as $key) {
 			if (isset($options[$key])) {
@@ -162,6 +170,7 @@ abstract class GpsPicker extends BaseControl
 			),
 			'zoom' => $this->zoom,
 			'type' => $this->type,
+			'disabled' => $this->disabled,
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
 		)));
@@ -192,6 +201,9 @@ abstract class GpsPicker extends BaseControl
 		$control->type = 'number';
 		$control->class[] = "gpspicker-$name";
 		$control->value = $value->$name;
+		if ($this->disabled) {
+                    $control->disabled = 'disabled';
+                }
 		$control->data('nette-rules', $this->prepareDataAttributes(array_values(array_filter($rules, function ($rule) use ($options) {
 			return in_array($rule['op'], $options['rules']);
 		}))) ?: NULL);
@@ -348,6 +360,19 @@ abstract class GpsPicker extends BaseControl
 	{
 		$this->showSearch = FALSE;
 
+		return $this;
+	}
+
+
+	/**
+         * Enable, diable input
+         * @param boolean $disabled
+         * @return \VojtechDobes\NetteForms\GpsPicker
+         */
+        public function setDisabled($disabled = FALSE)
+	{
+		$this->disabled = $disabled;
+                
 		return $this;
 	}
 
