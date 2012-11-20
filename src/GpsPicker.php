@@ -40,6 +40,7 @@ abstract class GpsPicker extends BaseControl
 	const DEFAULT_SIZE_X = 400;
 	const DEFAULT_SIZE_Y = 300;
 	const DEFAULT_TYPE = self::TYPE_ROADMAP;
+	const DEFAULT_USE_GOOGLE = TRUE;
 
 	/**
 	 * Default size
@@ -67,6 +68,12 @@ abstract class GpsPicker extends BaseControl
 	 * @var bool
 	 */
 	private $showSearch = TRUE;
+
+	/**
+	 * Should be used original Google Maps tilesets?
+	 * @var bool
+	 */
+	private $useGoogle = self::DEFAULT_USE_GOOGLE;
 
 	/**
 	 * Should be address returned?
@@ -164,6 +171,7 @@ abstract class GpsPicker extends BaseControl
 			'type' => $this->type,
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
+			'useGoogle' => $this->useGoogle,
 		)));
 
 		return $container;
@@ -324,6 +332,37 @@ abstract class GpsPicker extends BaseControl
 
 
 	/**
+	 * Original Google Maps tilesets will be used
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function enableGoogle()
+	{
+		$this->useGoogle = TRUE;
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Instead of original Google Maps tilesets will
+	 * be used Open Street Map tilesets
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function disableGoogle()
+	{
+		$this->disableSearch();
+
+		$this->useGoogle = FALSE;
+
+		return $this;
+	}
+
+
+
+	/**
 	 * Enables input for address search
 	 *
 	 * @param  bool if TRUE, address will be also returned
@@ -331,6 +370,8 @@ abstract class GpsPicker extends BaseControl
 	 */
 	public function enableSearch($addressRetrieval = FALSE)
 	{
+		$this->enableGoogle();
+
 		$this->showSearch = TRUE;
 		$this->addressRetrieval = (bool) $addressRetrieval;
 

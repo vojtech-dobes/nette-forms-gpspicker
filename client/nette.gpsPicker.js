@@ -41,6 +41,7 @@ var GpsPicker = function () {
 		var $el = $(el), gpspicker;
 		if (gpspicker = $el.data('gpspicker')) return gpspicker;
 
+		var map;
 		var options = $.extend(parseDataAttribute(el), options || {});
 
 		var x = options.size.x;
@@ -66,9 +67,26 @@ var GpsPicker = function () {
 			options.search = new google.maps.places.Autocomplete($search[0], {});
 		}
 
-		var map = new google.maps.Map($mapContainer[0], {
-			mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
-		});
+		if (options.useGoogle) {
+			map = new google.maps.Map($mapContainer[0], {
+				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
+			});
+		} else {
+			map = new google.maps.Map($mapContainer[0], {
+				mapTypeId: 'OSM',
+				mapTypeControlOptions: {
+					mapTypeIds: []
+				}
+			});
+			map.mapTypes.set('OSM', new google.maps.ImageMapType({
+				getTileUrl: function(coord, zoom) {
+					return 'http://tile.openstreetmap.org/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
+				},
+				tileSize: new google.maps.Size(256, 256),
+				name: 'OpenStreetMap',
+				maxZoom: 18
+			}));
+		}
 
 		return $el.data('gpspicker', $.extend({
 			map: map

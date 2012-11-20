@@ -138,4 +138,13 @@ $form->addGpsPicker('coords', 'Coordinates:', array(
 ));
 ```
 
-Keep in mind that provided address is not sent to server.
+### Alternative tilesets
+
+If you are afraid of exhausting API rate limit of Google Maps, you can use alternative free version provided by Open Street Maps project. Just use directive `useGoogle => FALSE` in constructor or:
+
+```php
+$form->addGpsPicker('coords', 'Coordinates:')
+	->disableGoogle();
+```
+
+Keep in mind that Open Street Maps version is not compatible with address search. Disabling Google maps will also disable search and vice versa.
