@@ -101,6 +101,16 @@ var GpsPicker = function () {
 	};
 
 	$(function () {
+		// Twitter Bootstrap
+		var rules = [
+			'[data-nette-gpspicker] img { max-width: none; }'
+		];
+		var stylesheet = window.document.styleSheets[0];
+		var method = stylesheet.cssRules ? 'insertRule' : 'addRule';
+		for (var i = 0; i < rules.length; i++) {
+			stylesheet[method].call(stylesheet,	 rules[i], 0);
+		}
+
 		that.load();
 	});
 };
