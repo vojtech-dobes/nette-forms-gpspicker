@@ -67,6 +67,15 @@ $lat = $form->values->coords->lat;
 $lng = $form->values->coords->lng;
 ```
 
+You can set value (respectively default value) like this:
+
+```php
+$form['coords']->setDefaultValue(array(
+	'lat' => 50.103245,
+	'lng' => 14.474691,
+));
+```
+
 ### Validation
 
 ```php
