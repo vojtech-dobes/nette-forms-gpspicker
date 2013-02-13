@@ -36,10 +36,17 @@ abstract class GpsPicker extends BaseControl
 	const DRIVER_SEZNAM = 'seznam';
 
 	/** string */
-	const TYPE_ROADMAP = 'ROADMAP';
-	const TYPE_SATELLITE = 'SATELLITE';
-	const TYPE_HYBRID = 'HYBRID';
-	const TYPE_TERRAIN = 'TERRAIN';
+	const TYPE_BASE = 'BASE'; // Seznam, like ROADMAP
+	const TYPE_BIKE = 'BIKE'; // Seznam
+	const TYPE_HISTORIC = 'HISTORIC'; // Seznam
+	const TYPE_HYBRID = 'HYBRID'; // Google, Seznam
+	const TYPE_NORMAL = 'NORMAL'; // Nokia, like ROADMAP
+	const TYPE_OPHOTO = 'OPHOTO'; // Seznam, like SATELLITE
+	const TYPE_ROADMAP = 'ROADMAP'; // Google
+	const TYPE_SATELLITE = 'SATELLITE'; // Google, Nokia
+	const TYPE_TERRAIN = 'TERRAIN'; // Google, Nokia
+	const TYPE_TRAIL = 'TRAIL'; // Seznam
+	const TYPE_TURIST = 'TURIST'; // Seznam, like TERRAIN
 
 	/** int */
 	const DEFAULT_ZOOM = 8;
@@ -82,12 +89,6 @@ abstract class GpsPicker extends BaseControl
 	private $showSearch = TRUE;
 
 	/**
-	 * Should be used original Google Maps tilesets?
-	 * @var bool
-	 */
-	private $useGoogle = self::DEFAULT_USE_GOOGLE;
-
-	/**
 	 * Should be address returned?
 	 * @var bool
 	 */
@@ -108,6 +109,51 @@ abstract class GpsPicker extends BaseControl
 	 */
 	private $exportedRules;
 
+	/**
+	 * Which driver supports search
+	 * @var array
+	 */
+	public static $searchSupport = array(
+		self::DRIVER_GOOGLE => TRUE,
+		self::DRIVER_NOKIA => FALSE,
+		self::DRIVER_OPENSTREETMAP => FALSE,
+		self::DRIVER_SEZNAM => FALSE,
+	);
+
+	/**
+	 * Which driver supports which types
+	 * @var array
+	 */
+	public static $typeSupport = array(
+		self::DRIVER_GOOGLE => array(
+			self::TYPE_HYBRID,
+			self::TYPE_ROADMAP,
+			self::TYPE_SATELLITE,
+			self::TYPE_TERRAIN,
+		),
+		self::DRIVER_NOKIA => array(
+			self::TYPE_NORMAL,
+			self::TYPE_ROADMAP,
+			self::TYPE_SATELLITE,
+			self::TYPE_TERRAIN,
+		),
+		self::DRIVER_OPENSTREETMAP => array(
+			self::TYPE_ROADMAP,
+		),
+		self::DRIVER_SEZNAM => array(
+			self::TYPE_BASE,
+			self::TYPE_BIKE,
+			self::TYPE_HISTORIC,
+			self::TYPE_HYBRID,
+			self::TYPE_OPHOTO,
+			self::TYPE_ROADMAP,
+			self::TYPE_SATELLITE,
+			self::TYPE_TERRAIN,
+			self::TYPE_TRAIL,
+			self::TYPE_TURIST,
+		),
+	);
+
 
 
 	/**
@@ -127,15 +173,19 @@ abstract class GpsPicker extends BaseControl
 		$this->control->type = 'text';
 
 		$options = (array) $options;
+		foreach (array('zoom', 'driver', 'type') as $key) {
+			if (isset($options[$key])) {
+				$this->{'set' . ucfirst($key)}($options[$key]);
+			}
+		}
 		if (isset($options['size'])) {
 			$this->setSize($options['size']['x'], $options['size']['y']);
 		}
 		if (isset($options['search'])) {
-			$this->showSearch = (bool) $options['search'];
-		}
-		foreach (array('zoom', 'driver', 'type') as $key) {
-			if (isset($options[$key])) {
-				$this->{'set' . ucfirst($key)}($options[$key]);
+			if ((bool) $options['search']) {
+				$this->enableSearch();
+			} else {
+				$this->disableSearch();
 			}
 		}
 		if (isset($options['manualInput'])) {
@@ -193,7 +243,6 @@ abstract class GpsPicker extends BaseControl
 			'type' => $this->type,
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
-			'useGoogle' => $this->useGoogle,
 		);
 
 		if ($this->manualInput) {
@@ -363,7 +412,14 @@ abstract class GpsPicker extends BaseControl
 		if (in_array($driver, $this->getSupportedDrivers()) === FALSE) {
 			throw new InvalidDriverException("Driver '$driver' is not supported for '{$this->getShape()}' shape.");
 		}
+		if ($this->showSearch && !self::$searchSupport[$driver]) {
+			$this->showSearch = FALSE;
+		}
 		$this->driver = $driver;
+
+		if (in_array($this->type, self::$typeSupport[$this->driver]) === FALSE) {
+			throw new UnsupportedTypeException("Driver '{$this->driver}' doesn't support '{$this->type}' type.");
+		}
 
 		return $this;
 	}
@@ -378,38 +434,11 @@ abstract class GpsPicker extends BaseControl
 	 */
 	public function setType($type)
 	{
-		$this->type = (string) $type;
-
-		return $this;
-	}
-
-
-
-	/**
-	 * Original Google Maps tilesets will be used
-	 *
-	 * @return GpsPicker provides a fluent interface
-	 */
-	public function enableGoogle()
-	{
-		$this->useGoogle = TRUE;
-
-		return $this;
-	}
-
-
-
-	/**
-	 * Instead of original Google Maps tilesets will
-	 * be used Open Street Map tilesets
-	 *
-	 * @return GpsPicker provides a fluent interface
-	 */
-	public function disableGoogle()
-	{
-		$this->disableSearch();
-
-		$this->useGoogle = FALSE;
+		$type = (string) $type;
+		if (in_array($type, self::$typeSupport[$this->driver]) === FALSE) {
+			throw new UnsupportedTypeException("Driver '{$this->driver}' doesn't support '$type' type.");
+		}
+		$this->type = $type;
 
 		return $this;
 	}
@@ -424,7 +453,9 @@ abstract class GpsPicker extends BaseControl
 	 */
 	public function enableSearch($addressRetrieval = FALSE)
 	{
-		$this->enableGoogle();
+		if (!self::$searchSupport[$this->driver]) {
+			throw new UnsupportedSearchException("Driver '{$this->driver}' doesn't support search.");
+		}
 
 		$this->showSearch = TRUE;
 		$this->addressRetrieval = (bool) $addressRetrieval;
@@ -529,3 +560,13 @@ abstract class GpsPicker extends BaseControl
  * Unsupported driver for used shape
  */
 class InvalidDriverException extends \InvalidArgumentException {}
+
+/**
+ * Selected driver doesn's support search
+ */
+class UnsupportedSearchException extends \InvalidArgumentException {}
+
+/**
+ * Selected driver doesn's support given type
+ */
+class UnsupportedTypeException extends \InvalidArgumentException {}

@@ -123,12 +123,18 @@ class GpsPositionPicker extends GpsPicker
 
 	/**
 	 * Registers method 'addGpsPicker' adding GpsPositionPicker to form
+	 *
+	 * @param  string default driver
+	 * @param  string default type
 	 */
-	public static function register($driver = GpsPicker::DRIVER_GOOGLE)
+	public static function register($driver = GpsPicker::DRIVER_GOOGLE, $type = GpsPicker::TYPE_ROADMAP)
 	{
-		Container::extensionMethod('addGpsPicker', function ($container, $name, $caption = NULL, $options = array()) use ($driver) {
+		Container::extensionMethod('addGpsPicker', function ($container, $name, $caption = NULL, $options = array()) use ($driver, $type) {
 			if (!isset($options['driver'])) {
 				$options['driver'] = $driver;
+			}
+			if (!isset($options['type'])) {
+				$options['type'] = $type;
 			}
 			return $container[$name] = new GpsPositionPicker($caption, $options);
 		});

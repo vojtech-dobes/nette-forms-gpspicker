@@ -24,6 +24,7 @@ class GpsPickerExtension extends DI\CompilerExtension
 	/** @var array */
 	private $defaultConfig = array(
 		'driver' => GpsPicker::DRIVER_GOOGLE,
+		'type' => GpsPicker::TYPE_ROADMAP,
 	);
 
 
@@ -41,9 +42,16 @@ class GpsPickerExtension extends DI\CompilerExtension
 	public function afterCompile(PhpGenerator\ClassType $class)
 	{
 		$config = $this->getConfig($this->defaultConfig);
+		$type = strtoupper($config['type']);
+		if (in_array($type, GpsPicker::$typeSupport[$config['driver']]) === FALSE) {
+			throw new UnsupportedTypeException("Driver '$config[driver]' doesn't support '$type' type.");
+		}
 
 		$initialize = $class->methods['initialize'];
-		$initialize->addBody('VojtechDobes\NetteForms\GpsPositionPicker::register(?);', array($config['driver']));
+		$initialize->addBody('VojtechDobes\NetteForms\GpsPositionPicker::register(?, ?);', array(
+			$config['driver'],
+			$type,
+		));
 	}
 
 }

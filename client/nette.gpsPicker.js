@@ -5,17 +5,19 @@
  * @license New BSD
  *
  * @dependency jQuery
- * @dependency Google Maps V3
- * @dependency netteForms.js
+ * @dependency Google Maps API v3 || Nokia Maps v1.2 || Mapy.cz API v4
+ * @dependency netteForms.js (optional)
  */
 
 (function(window, undefined) {
 
 var google = window.google;
+var nokia = window.nokia;
+var SMap = window.SMap;
 var $ = window.jQuery;
 var Nette = window.Nette;
 
-if (!google || !$) {
+if ((!google && !nokia && !SMap) || !$) {
 	return;
 }
 
@@ -119,6 +121,262 @@ var drivers = {
 						$latInput.val(lat);
 						$lngInput.val(lng);
 						marker.setPosition(new google.maps.LatLng(lat, lng));
+						trigger(lat, lng);
+					}
+				};
+			}
+		}
+	},
+	nokia: {
+		createMap: function ($container, options) {
+			if (options.type === 'ROADMAP') {
+				options.type = 'NORMAL';
+			}
+			return new nokia.maps.map.Display($container[0], {
+				baseMapType: nokia.maps.map.Display[options.type],
+				components: [
+					new nokia.maps.map.component.Behavior(),
+					new nokia.maps.map.component.ZoomBar(),
+					new nokia.maps.map.component.Overview(),
+					new nokia.maps.map.component.TypeSelector(),
+					new nokia.maps.map.component.ScaleBar()
+				]
+			});
+		},
+		shapes: {
+			point: function ($el, $inputs, map, options) {
+				var $latInput = $inputs.filter('[id$=lat]');
+				var $lngInput = $inputs.filter('[id$=lng]');
+				var trigger = function (lat, lng) {
+					$el.trigger('change.gpspicker', [{
+						lat: lat,
+						lng: lng
+					}]);
+				};
+
+				var coordinate = new nokia.maps.geo.Coordinate($latInput.val() * 1, $lngInput.val() * 1);
+
+				var marker = new nokia.maps.map.StandardMarker(coordinate, {
+					draggable: !options.disabled
+				});
+				map.objects.add(marker);
+
+				map.setCenter(coordinate);
+				map.setZoomLevel(options.zoom);
+
+				if (options.disabled) {
+					return {
+						marker: marker,
+						getValue: function () {
+							return {
+								lat: $latInput.val(),
+								lng: $lngInput.val()
+							};
+						}
+					};
+				}
+
+				marker.addListener('dragend', function () {
+					$latInput.val(marker.coordinate.latitude);
+					$lngInput.val(marker.coordinate.longitude);
+					trigger(marker.coordinate.latitude, marker.coordinate.longitude);
+				}, false);
+
+				var timeout;
+				map.addListener('click', function (e) {
+					if (timeout) {
+						clearTimeout(timeout);
+					}
+					timeout = setTimeout(function () {
+						var coordinate = map.pixelToGeo(e.displayX, e.displayY);
+						marker.set('coordinate', coordinate);
+						$latInput.val(coordinate.latitude);
+						$lngInput.val(coordinate.longitude);
+						trigger(coordinate.latitude, coordinate.longitude);
+					}, 200);
+				});
+				map.addListener('mapviewchangestart', function (e) {
+					if (timeout) {
+						clearTimeout(timeout);
+						timeout = null;
+					}
+				});
+
+				/*if (options.search) {
+					google.maps.event.addListener(options.search, 'place_changed', function () {
+						var place = options.search.getPlace();
+						if (!place.geometry) return;
+
+						var location = place.geometry.location;
+						if (place.geometry.viewport) {
+							map.fitBounds(place.geometry.viewport);
+						} else {
+							map.setCenter(location);
+							map.setZoom(17);
+						}
+						marker.setPosition(location);
+						$latInput.val(location.lat());
+						$lngInput.val(location.lng());
+						trigger(location.lat(), location.lng());
+					});
+				}*/
+
+				return {
+					marker: marker,
+					getValue: function () {
+						return {
+							lat: $latInput.val(),
+							lng: $lngInput.val()
+						};
+					},
+					setValue: function (lat, lng) {
+						lat = lat * 1;
+						lng = lng * 1;
+						$latInput.val(lat);
+						$lngInput.val(lng);
+						marker.set('coordinate', new nokia.maps.geo.Coordinate(lat, lng));
+						trigger(lat, lng);
+					}
+				};
+			}
+		}
+	},
+	openstreetmap: {
+		createMap: function ($container, options) {
+			var map = new google.maps.Map($container[0], {
+				mapTypeId: 'OSM',
+				mapTypeControlOptions: {
+					mapTypeIds: []
+				}
+			});
+			map.mapTypes.set('OSM', new google.maps.ImageMapType({
+				getTileUrl: function(coord, zoom) {
+					return 'http://tile.openstreetmap.org/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
+				},
+				tileSize: new google.maps.Size(256, 256),
+				name: 'OpenStreetMap',
+				maxZoom: 18
+			}));
+			return map;
+		}
+	},
+	seznam: {
+		createMap: function ($container, options) {
+			var map = new SMap(
+				$container.get(0),
+				SMap.Coords.fromWGS84(14.41, 50.08),
+				10
+			);
+			if (options.type === 'ROADMAP') {
+				options.type = 'BASE';
+			} else if (options.type === 'SATELLITE') {
+				options.type = 'OPHOTO';
+			}
+			map.addDefaultLayer(SMap['DEF_'+ options.type]).enable();
+			map.addDefaultControls();
+			return map;
+		},
+		shapes: {
+			point: function ($el, $inputs, map, options) {
+				var $latInput = $inputs.filter('[id$=lat]');
+				var $lngInput = $inputs.filter('[id$=lng]');
+				var trigger = function (lat, lng) {
+					$el.trigger('change.gpspicker', [{
+						lat: lat,
+						lng: lng
+					}]);
+				};
+
+				var position = SMap.Coords.fromWGS84($lngInput.val() * 1, $latInput.val() * 1);
+
+				var layer = new SMap.Layer.Marker();
+				map.addLayer(layer);
+				layer.enable();
+
+				var marker = new SMap.Marker(position, '', {});
+				if (!options.disabled) {
+					var mouse = new SMap.Control.Mouse(SMap.MOUSE_PAN | SMap.MOUSE_WHEEL | SMap.MOUSE_ZOOM);
+					map.addControl(mouse);
+					marker.decorate(SMap.Marker.Feature.Draggable);
+				}
+				layer.addMarker(marker);
+
+				map.setCenterZoom(position, options.zoom);
+
+				if (options.disabled) {
+					return {
+						marker: marker,
+						getValue: function () {
+							return {
+								lat: $latInput.val(),
+								lng: $lngInput.val()
+							};
+						}
+					};
+				}
+
+				var signals = map.getSignals();
+				signals.addListener(window, 'marker-drag-stop', function (e) {
+					var coords = e.target.getCoords().toWGS84();
+					$latInput.val(coords[1]);
+					$lngInput.val(coords[0]);
+					trigger(coords[1], coords[0]);
+				});
+
+				var timeout;
+				signals.addListener(map, 'map-click', function (e) {
+					if (timeout) {
+						clearTimeout(timeout);
+					}
+					timeout = setTimeout(function () {
+						var coords = SMap.Coords.fromEvent(e.data.event, map);
+						marker.setCoords(coords);
+						coords = coords.toWGS84();
+						$latInput.val(coords[1]);
+						$lngInput.val(coords[0]);
+						trigger(coords[1], coords[0]);
+					}, 200);
+				});
+				signals.addListener(map, 'zoom-start', function (e) {
+					if (timeout) {
+						clearTimeout(timeout);
+						timeout = null;
+					}
+				});
+
+				/*if (options.search) {
+					google.maps.event.addListener(options.search, 'place_changed', function () {
+						var place = options.search.getPlace();
+						if (!place.geometry) return;
+
+						var location = place.geometry.location;
+						if (place.geometry.viewport) {
+							map.fitBounds(place.geometry.viewport);
+						} else {
+							map.setCenter(location);
+							map.setZoom(17);
+						}
+						marker.setPosition(location);
+						$latInput.val(location.lat());
+						$lngInput.val(location.lng());
+						trigger(location.lat(), location.lng());
+					});
+				}*/
+
+				return {
+					marker: marker,
+					getValue: function () {
+						return {
+							lat: $latInput.val(),
+							lng: $lngInput.val()
+						};
+					},
+					setValue: function (lat, lng) {
+						lat = lat * 1;
+						lng = lng * 1;
+						$latInput.val(lat);
+						$lngInput.val(lng);
+						marker.setCoords(SMap.Coords.fromWGS84(lat, lng));
 						trigger(lat, lng);
 					}
 				};

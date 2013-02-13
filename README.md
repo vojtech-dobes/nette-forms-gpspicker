@@ -1,6 +1,13 @@
 ## For Nette Framework
 
-Google Maps based coordinates picker. [Try it now!](http://vojtechdobes.com/gpspicker/)
+GPS coordinates picker. [Try it now!](http://vojtechdobes.com/gpspicker/)
+
+##### Drivers
+
+- Google Maps API v3
+- Mapy.cz API v4
+- Nokia Maps API v2
+- OpenStreetMap (using Google Maps API v3)
 
 ##### License
 
@@ -18,7 +25,7 @@ http://vojtechdobes.com/gpspicker/
 
 1. Get the source code from Github or via Composer (`vojtech-dobes/nette-forms-gpspicker`).
 2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension.
-3. Link Google Maps API v3 (Places) and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
+3. Link appropriate maps API SDK and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
 
 ```neon
 extensions:
@@ -37,6 +44,8 @@ $configurator->onCompile[] = function ($configurator, $compiler) {
 	<script src="{$basePath}/libs/nette.gpsPicker.js"></script>
 </body>
 ```
+
+*(for example when using Google Maps API v3)*
 
 ## Usage
 
@@ -153,13 +162,42 @@ $form->addGpsPicker('coords', 'Coordinates:', array(
 ));
 ```
 
-### Alternative tilesets
+### Drivers
 
-If you are afraid of exhausting API rate limit of Google Maps, you can use alternative free version provided by Open Street Maps project. Just use directive `useGoogle => FALSE` in constructor or:
+If you are afraid of exhausting API rate limit of Google Maps, you can use alternative provider as well. All you have to do is to link their appropriate API SDK and set the driver:
 
 ```php
 $form->addGpsPicker('coords', 'Coordinates:')
-	->disableGoogle();
+	->setDriver(Gps::DRIVER_SEZNAM);
 ```
 
-Keep in mind that Open Street Maps version is not compatible with address search. Disabling Google maps will also disable search and vice versa.
+Available providers are:
+
+##### `Gps::DRIVER_GOOGLE` (search: yes)
+
+```html
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+```
+
+##### `Gps::DRIVER_NOKIA` (search: no)
+
+```html
+<script src="http://api.maps.nokia.com/2.2.1/jsl.js?with=all" charset="utf-8"></script>
+<script>
+	nokia.Settings.set('appId', 'XXX');
+	nokia.Settings.set('authenticationToken', 'XXX');
+</script>
+```
+
+##### `Gps::DRIVER_OPENSTREETMAP` (search: no)
+
+```html
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+```
+
+##### `Gps::DRIVER_SEZNAM` (search: no)
+
+```html
+<script src="http://api4.mapy.cz/loader.js"></script>
+<script>Loader.load()</script>
+```
