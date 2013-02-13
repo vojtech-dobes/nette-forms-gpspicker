@@ -36,6 +36,18 @@ class GpsPositionPicker extends GpsPicker
 
 
 
+	protected function getSupportedDrivers()
+	{
+		return array(
+			self::DRIVER_GOOGLE,
+			self::DRIVER_NOKIA,
+			self::DRIVER_OPENSTREETMAP,
+			self::DRIVER_SEZNAM,
+		);
+	}
+
+
+
 	protected function getShape()
 	{
 		return 'point';
@@ -112,9 +124,12 @@ class GpsPositionPicker extends GpsPicker
 	/**
 	 * Registers method 'addGpsPicker' adding GpsPositionPicker to form
 	 */
-	public static function register()
+	public static function register($driver = GpsPicker::DRIVER_GOOGLE)
 	{
-		Container::extensionMethod('addGpsPicker', function ($container, $name, $caption = NULL, $options = array()) {
+		Container::extensionMethod('addGpsPicker', function ($container, $name, $caption = NULL, $options = array()) use ($driver) {
+			if (!isset($options['driver'])) {
+				$options['driver'] = $driver;
+			}
 			return $container[$name] = new GpsPositionPicker($caption, $options);
 		});
 	}

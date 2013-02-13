@@ -30,6 +30,12 @@ abstract class GpsPicker extends BaseControl
 	const GREAT_CIRCLE_RADIUS = 6372.795;
 
 	/** string */
+	const DRIVER_GOOGLE = 'google';
+	const DRIVER_NOKIA = 'nokia';
+	const DRIVER_OPENSTREETMAP = 'openstreetmap';
+	const DRIVER_SEZNAM = 'seznam';
+
+	/** string */
 	const TYPE_ROADMAP = 'ROADMAP';
 	const TYPE_SATELLITE = 'SATELLITE';
 	const TYPE_HYBRID = 'HYBRID';
@@ -56,6 +62,12 @@ abstract class GpsPicker extends BaseControl
 	 * @var int
 	 */
 	private $zoom = self::DEFAULT_ZOOM;
+
+	/**
+	 * Default driver
+	 * @var string
+	 */
+	private $driver = self::DRIVER_GOOGLE;
 
 	/**
 	 * Default type
@@ -121,7 +133,7 @@ abstract class GpsPicker extends BaseControl
 		if (isset($options['search'])) {
 			$this->showSearch = (bool) $options['search'];
 		}
-		foreach (array('zoom', 'type') as $key) {
+		foreach (array('zoom', 'driver', 'type') as $key) {
 			if (isset($options[$key])) {
 				$this->{'set' . ucfirst($key)}($options[$key]);
 			}
@@ -177,6 +189,7 @@ abstract class GpsPicker extends BaseControl
 				'y' => $this->size['y'],
 			),
 			'zoom' => $this->zoom,
+			'driver' => $this->driver,
 			'type' => $this->type,
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
@@ -338,6 +351,26 @@ abstract class GpsPicker extends BaseControl
 
 
 	/**
+	 * Sets default driver of map
+	 *
+	 * @param  string self::DRIVER_*
+	 * @return provides a fluent interface
+	 * @throws InvalidArgumentException if provided driver is not supported for current shape
+	 */
+	public function setDriver($driver)
+	{
+		$driver = (string) $driver;
+		if (in_array($driver, $this->getSupportedDrivers()) === FALSE) {
+			throw new InvalidDriverException("Driver '$driver' is not supported for '{$this->getShape()}' shape.");
+		}
+		$this->driver = $driver;
+
+		return $this;
+	}
+
+
+
+	/**
 	 * Sets default type of map
 	 *
 	 * @param  string self::TYPE_*
@@ -448,6 +481,15 @@ abstract class GpsPicker extends BaseControl
 
 
 	/**
+	 * Should return list of drivers
+	 *
+	 * @return string[]
+	 */
+	abstract protected function getSupportedDrivers();
+
+
+
+	/**
 	 * Should return identifier of proper JS handler
 	 *
 	 * @return string
@@ -482,3 +524,8 @@ abstract class GpsPicker extends BaseControl
 	abstract protected function createValue($args);
 
 }
+
+/**
+ * Unsupported driver for used shape
+ */
+class InvalidDriverException extends \InvalidArgumentException {}

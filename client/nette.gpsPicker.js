@@ -19,9 +19,116 @@ if (!google || !$) {
 	return;
 }
 
+var drivers = {
+	google: {
+		createMap: function ($container, options) {
+			return new google.maps.Map($container[0], {
+				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
+			});
+		},
+		search: function ($search) {
+			return new google.maps.places.Autocomplete($search.get(0), {});
+		},
+		shapes: {
+			point: function ($el, $inputs, map, options) {
+				var $latInput = $inputs.filter('[id$=lat]');
+				var $lngInput = $inputs.filter('[id$=lng]');
+				var trigger = function (lat, lng) {
+					$el.trigger('change.gpspicker', [{
+						lat: lat,
+						lng: lng
+					}]);
+				};
+
+				var position = new google.maps.LatLng($latInput.val() * 1, $lngInput.val() * 1);
+
+				var marker = new google.maps.Marker({
+					position: position,
+					map: map,
+					draggable: !options.disabled
+				});
+
+				map.setCenter(position);
+				map.setZoom(options.zoom);
+
+				if (options.disabled) {
+					return {
+						marker: marker,
+						getValue: function () {
+							return {
+								lat: $latInput.val(),
+								lng: $lngInput.val()
+							};
+						}
+					};
+				}
+
+				google.maps.event.addListener(marker, 'mouseup', function (e) {
+					$latInput.val(e.latLng.lat());
+					$lngInput.val(e.latLng.lng());
+					trigger(e.latLng.lat(), e.latLng.lng());
+				});
+
+				var timeout;
+				google.maps.event.addListener(map, 'click', function (e) {
+					timeout = setTimeout(function () {
+						marker.setPosition(e.latLng);
+						marker.setMap(map);
+						$latInput.val(e.latLng.lat());
+						$lngInput.val(e.latLng.lng());
+						trigger(e.latLng.lat(), e.latLng.lng());
+					}, 200);
+				});
+				google.maps.event.addListener(map, 'dblclick', function (e) {
+					if (timeout) {
+						clearTimeout(timeout);
+						timeout = null;
+					}
+				});
+
+				if (options.search) {
+					google.maps.event.addListener(options.search, 'place_changed', function () {
+						var place = options.search.getPlace();
+						if (!place.geometry) return;
+
+						var location = place.geometry.location;
+						if (place.geometry.viewport) {
+							map.fitBounds(place.geometry.viewport);
+						} else {
+							map.setCenter(location);
+							map.setZoom(17);
+						}
+						marker.setPosition(location);
+						$latInput.val(location.lat());
+						$lngInput.val(location.lng());
+						trigger(location.lat(), location.lng());
+					});
+				}
+
+				return {
+					marker: marker,
+					getValue: function () {
+						return {
+							lat: $latInput.val(),
+							lng: $lngInput.val()
+						};
+					},
+					setValue: function (lat, lng) {
+						lat = lat * 1;
+						lng = lng * 1;
+						$latInput.val(lat);
+						$lngInput.val(lng);
+						marker.setPosition(new google.maps.LatLng(lat, lng));
+						trigger(lat, lng);
+					}
+				};
+			}
+		}
+	}
+};
+
 var GpsPicker = function () {
 	var that = this;
-	var handlers = {};
 
 	var parseDataAttribute = function (el) {
 		return eval('[{' + (el.getAttribute('data-nette-gpspicker') || '') + '}]')[0];
@@ -41,7 +148,6 @@ var GpsPicker = function () {
 		var $el = $(el), gpspicker;
 		if (gpspicker = $el.data('gpspicker')) return gpspicker;
 
-		var map;
 		var options = $.extend(parseDataAttribute(el), options || {});
 
 		var x = options.size.x;
@@ -66,7 +172,10 @@ var GpsPicker = function () {
 		}
 		$el.find('label').hide();
 
-		if (options.search) {
+		var driver = drivers[options.driver];
+		var map = driver.createMap($mapContainer, options);
+
+		if (options.search && driver.search) {
 			var $search = $el.find('[id$=search]');
 			if ($search.length) {
 				$search.show();
@@ -75,40 +184,12 @@ var GpsPicker = function () {
 					type: 'text'
 				}).prependTo($el);
 			}
-			options.search = new google.maps.places.Autocomplete($search[0], {});
-		}
-
-		if (options.useGoogle) {
-			map = new google.maps.Map($mapContainer[0], {
-				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
-			});
-		} else {
-			map = new google.maps.Map($mapContainer[0], {
-				mapTypeId: 'OSM',
-				mapTypeControlOptions: {
-					mapTypeIds: []
-				}
-			});
-			map.mapTypes.set('OSM', new google.maps.ImageMapType({
-				getTileUrl: function(coord, zoom) {
-					return 'http://tile.openstreetmap.org/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
-				},
-				tileSize: new google.maps.Size(256, 256),
-				name: 'OpenStreetMap',
-				maxZoom: 18
-			}));
+			options.search = driver.search($search);
 		}
 
 		return $el.data('gpspicker', $.extend({
 			map: map
-		}, new handlers[options.shape]($el, $inputs, map, options) || {}));
-	};
-
-	this.registerHandler = function (type, handler, callback) {
-		handlers[type] = handler;
-		if (Nette) {
-			callback(Nette);
-		}
+		}, driver.shapes[options.shape]($el, $inputs, map, options) || {}));
 	};
 
 	$(function () {
@@ -122,108 +203,25 @@ var GpsPicker = function () {
 			stylesheet[method].call(stylesheet,	 rules[i], 0);
 		}
 
+		if (Nette) {
+			Nette.validators.maxLat = function (elem, arg, value) {
+				return value <= arg;
+			};
+			Nette.validators.maxLng = function (elem, arg, value) {
+				return value <= arg;
+			};
+			Nette.validators.minLat = function (elem, arg, value) {
+				return value >= arg;
+			};
+			Nette.validators.minLng = function (elem, arg, value) {
+				return value >= arg;
+			};
+		}
+
 		that.load();
 	});
 };
 
 var GpsPicker = window.NetteGpsPicker = window.NetteGpsPicker || new GpsPicker();
-
-// single GPS position
-GpsPicker.registerHandler('point', function ($el, $inputs, map, options) {
-	var $latInput = $inputs.filter('[id$=lat]');
-	var $lngInput = $inputs.filter('[id$=lng]');
-	var trigger = function (lat, lng) {
-		$el.trigger('change.gpspicker', [{
-			lat: lat,
-			lng: lng
-		}]);
-	};
-
-	var position = new google.maps.LatLng($latInput.val() * 1, $lngInput.val() * 1);
-
-	var marker = new google.maps.Marker({
-		position: position,
-		map: map,
-		draggable: true
-	});
-
-	map.setCenter(position);
-	map.setZoom(options.zoom);
-
-	google.maps.event.addListener(marker, 'mouseup', function (e) {
-		$latInput.val(e.latLng.lat());
-		$lngInput.val(e.latLng.lng());
-		trigger(e.latLng.lat(), e.latLng.lng());
-	});
-
-	var timeout;
-	google.maps.event.addListener(map, 'click', function (e) {
-		timeout = setTimeout(function () {
-			marker.setPosition(e.latLng);
-			marker.setMap(map);
-			$latInput.val(e.latLng.lat());
-			$lngInput.val(e.latLng.lng());
-			trigger(e.latLng.lat(), e.latLng.lng());
-		}, 200);
-	});
-	google.maps.event.addListener(map, 'dblclick', function (e) {
-		if (timeout) {
-			clearTimeout(timeout);
-			timeout = null;
-		}
-	});
-
-	if (options.search) {
-		google.maps.event.addListener(options.search, 'place_changed', function () {
-			var place = options.search.getPlace();
-			if (!place.geometry) return;
-
-			var location = place.geometry.location;
-			if (place.geometry.viewport) {
-				map.fitBounds(place.geometry.viewport);
-			} else {
-				map.setCenter(location);
-				map.setZoom(17);
-			}
-			marker.setPosition(location);
-			$latInput.val(location.lat());
-			$lngInput.val(location.lng());
-			trigger(location.lat(), location.lng());
-		});
-	}
-
-	return {
-		marker: marker,
-		getValue: function () {
-			return {
-				lat: $latInput.val(),
-				lng: $lngInput.val()
-			};
-		},
-		setValue: function (lat, lng) {
-			lat = lat * 1;
-			lng = lng * 1;
-			$latInput.val(lat);
-			$lngInput.val(lng);
-			marker.setPosition(new google.maps.LatLng(lat, lng));
-			trigger(lat, lng);
-		}
-	};
-}, function (Nette) {
-	Nette.validators.maxLat = function (elem, arg, value) {
-		return value <= arg;
-	};
-	Nette.validators.maxLng = function (elem, arg, value) {
-		console.log(value, arg);
-		return value <= arg;
-	};
-	Nette.validators.minLat = function (elem, arg, value) {
-		console.log(value, arg);
-		return value >= arg;
-	};
-	Nette.validators.minLng = function (elem, arg, value) {
-		return value >= arg;
-	};
-});
 
 })(window);

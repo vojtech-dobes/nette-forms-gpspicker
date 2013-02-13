@@ -21,6 +21,13 @@ if (!class_exists('Nette\PhpGenerator\ClassType')) {
 class GpsPickerExtension extends DI\CompilerExtension
 {
 
+	/** @var array */
+	private $defaultConfig = array(
+		'driver' => GpsPicker::DRIVER_GOOGLE,
+	);
+
+
+
 	public function loadConfiguration()
 	{
 		$container = $this->getContainerBuilder();
@@ -33,8 +40,10 @@ class GpsPickerExtension extends DI\CompilerExtension
 
 	public function afterCompile(PhpGenerator\ClassType $class)
 	{
+		$config = $this->getConfig($this->defaultConfig);
+
 		$initialize = $class->methods['initialize'];
-		$initialize->addBody('VojtechDobes\NetteForms\GpsPositionPicker::register();');
+		$initialize->addBody('VojtechDobes\NetteForms\GpsPositionPicker::register(?);', array($config['driver']));
 	}
 
 }
