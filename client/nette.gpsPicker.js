@@ -21,6 +21,37 @@ if ((!google && !nokia && !SMap) || !$) {
 	return;
 }
 
+var shapes = {
+	point: (function () {
+		var PointShape = function ($el, $inputs) {
+			this._el = $el;
+			this._latInput = $inputs.filter('[id$=lat]');
+			this._lngInput = $inputs.filter('[id$=lng]');
+		};
+		PointShape.prototype.fill = function (lat, lng) {
+			this._latInput.val(lat);
+			this._lngInput.val(lng);
+			this._el.trigger('change.gpspicker', [{
+				lat: lat,
+				lng: lng
+			}]);
+		};
+		PointShape.prototype.setValue = function (lat, lng) {
+			lat = lat * 1;
+			lng = lng * 1;
+			this.fill(lat, lng);
+			this._onSetValue(lat, lng);
+		};
+		PointShape.prototype.getValue = function () {
+			return {
+				lat: this._latInput.val(),
+				lng: this._lngInput.val()
+			};
+		};
+		return PointShape;
+	})()
+};
+
 var drivers = {
 	google: {
 		createMap: function ($container, options) {
@@ -32,98 +63,58 @@ var drivers = {
 			return new google.maps.places.Autocomplete($search.get(0), {});
 		},
 		shapes: {
-			point: function ($el, $inputs, map, options) {
-				var $latInput = $inputs.filter('[id$=lat]');
-				var $lngInput = $inputs.filter('[id$=lng]');
-				var trigger = function (lat, lng) {
-					$el.trigger('change.gpspicker', [{
-						lat: lat,
-						lng: lng
-					}]);
-				};
+			point: function (shape, options) {
+				var val = shape.getValue();
+				var position = new google.maps.LatLng(val.lat * 1, val.lng * 1);
+				shape.map.setCenter(position);
+				shape.map.setZoom(options.zoom);
 
-				var position = new google.maps.LatLng($latInput.val() * 1, $lngInput.val() * 1);
-
-				var marker = new google.maps.Marker({
+				shape.marker = new google.maps.Marker({
 					position: position,
-					map: map,
+					map: shape.map,
 					draggable: !options.disabled
 				});
-
-				map.setCenter(position);
-				map.setZoom(options.zoom);
-
-				if (options.disabled) {
-					return {
-						marker: marker,
-						getValue: function () {
-							return {
-								lat: $latInput.val(),
-								lng: $lngInput.val()
-							};
-						}
-					};
-				}
-
-				google.maps.event.addListener(marker, 'mouseup', function (e) {
-					$latInput.val(e.latLng.lat());
-					$lngInput.val(e.latLng.lng());
-					trigger(e.latLng.lat(), e.latLng.lng());
-				});
-
-				var timeout;
-				google.maps.event.addListener(map, 'click', function (e) {
-					timeout = setTimeout(function () {
-						marker.setPosition(e.latLng);
-						marker.setMap(map);
-						$latInput.val(e.latLng.lat());
-						$lngInput.val(e.latLng.lng());
-						trigger(e.latLng.lat(), e.latLng.lng());
-					}, 200);
-				});
-				google.maps.event.addListener(map, 'dblclick', function (e) {
-					if (timeout) {
-						clearTimeout(timeout);
-						timeout = null;
-					}
-				});
-
-				if (options.search) {
-					google.maps.event.addListener(options.search, 'place_changed', function () {
-						var place = options.search.getPlace();
-						if (!place.geometry) return;
-
-						var location = place.geometry.location;
-						if (place.geometry.viewport) {
-							map.fitBounds(place.geometry.viewport);
-						} else {
-							map.setCenter(location);
-							map.setZoom(17);
-						}
-						marker.setPosition(location);
-						$latInput.val(location.lat());
-						$lngInput.val(location.lng());
-						trigger(location.lat(), location.lng());
-					});
-				}
-
-				return {
-					marker: marker,
-					getValue: function () {
-						return {
-							lat: $latInput.val(),
-							lng: $lngInput.val()
-						};
-					},
-					setValue: function (lat, lng) {
-						lat = lat * 1;
-						lng = lng * 1;
-						$latInput.val(lat);
-						$lngInput.val(lng);
-						marker.setPosition(new google.maps.LatLng(lat, lng));
-						trigger(lat, lng);
-					}
+				shape._onSetValue = function (lat, lng) {
+					this.marker.setPosition(new google.maps.LatLng(lat, lng));
 				};
+
+				if (!options.disabled) {
+					google.maps.event.addListener(shape.marker, 'mouseup', function (e) {
+						shape.fill(e.latLng.lat(), e.latLng.lng());
+					});
+
+					var timeout;
+					google.maps.event.addListener(shape.map, 'click', function (e) {
+						timeout = setTimeout(function () {
+							shape.marker.setPosition(e.latLng);
+							shape.marker.setMap(shape.map);
+							shape.fill(e.latLng.lat(), e.latLng.lng());
+						}, 200);
+					});
+					google.maps.event.addListener(shape.map, 'dblclick', function (e) {
+						if (timeout) {
+							clearTimeout(timeout);
+							timeout = null;
+						}
+					});
+
+					if (options.search) {
+						google.maps.event.addListener(options.search, 'place_changed', function () {
+							var place = options.search.getPlace();
+							if (!place.geometry) return;
+
+							var location = place.geometry.location;
+							if (place.geometry.viewport) {
+								shape.map.fitBounds(place.geometry.viewport);
+							} else {
+								shape.map.setCenter(location);
+								shape.map.setZoom(17);
+							}
+							shape.marker.setPosition(location);
+							shape.fill(location.lat(), location.lng());
+						});
+					}
+				}
 			}
 		}
 	},
@@ -144,100 +135,44 @@ var drivers = {
 			});
 		},
 		shapes: {
-			point: function ($el, $inputs, map, options) {
-				var $latInput = $inputs.filter('[id$=lat]');
-				var $lngInput = $inputs.filter('[id$=lng]');
-				var trigger = function (lat, lng) {
-					$el.trigger('change.gpspicker', [{
-						lat: lat,
-						lng: lng
-					}]);
-				};
+			point: function (shape, options) {
+				var val = shape.getValue();
+				var coordinate = new nokia.maps.geo.Coordinate(val.lat * 1, val.lng * 1);
 
-				var coordinate = new nokia.maps.geo.Coordinate($latInput.val() * 1, $lngInput.val() * 1);
-
-				var marker = new nokia.maps.map.StandardMarker(coordinate, {
+				shape.marker = new nokia.maps.map.StandardMarker(coordinate, {
 					draggable: !options.disabled
 				});
-				map.objects.add(marker);
-
-				map.setCenter(coordinate);
-				map.setZoomLevel(options.zoom);
-
-				if (options.disabled) {
-					return {
-						marker: marker,
-						getValue: function () {
-							return {
-								lat: $latInput.val(),
-								lng: $lngInput.val()
-							};
-						}
-					};
-				}
-
-				marker.addListener('dragend', function () {
-					$latInput.val(marker.coordinate.latitude);
-					$lngInput.val(marker.coordinate.longitude);
-					trigger(marker.coordinate.latitude, marker.coordinate.longitude);
-				}, false);
-
-				var timeout;
-				map.addListener('click', function (e) {
-					if (timeout) {
-						clearTimeout(timeout);
-					}
-					timeout = setTimeout(function () {
-						var coordinate = map.pixelToGeo(e.displayX, e.displayY);
-						marker.set('coordinate', coordinate);
-						$latInput.val(coordinate.latitude);
-						$lngInput.val(coordinate.longitude);
-						trigger(coordinate.latitude, coordinate.longitude);
-					}, 200);
-				});
-				map.addListener('mapviewchangestart', function (e) {
-					if (timeout) {
-						clearTimeout(timeout);
-						timeout = null;
-					}
-				});
-
-				/*if (options.search) {
-					google.maps.event.addListener(options.search, 'place_changed', function () {
-						var place = options.search.getPlace();
-						if (!place.geometry) return;
-
-						var location = place.geometry.location;
-						if (place.geometry.viewport) {
-							map.fitBounds(place.geometry.viewport);
-						} else {
-							map.setCenter(location);
-							map.setZoom(17);
-						}
-						marker.setPosition(location);
-						$latInput.val(location.lat());
-						$lngInput.val(location.lng());
-						trigger(location.lat(), location.lng());
-					});
-				}*/
-
-				return {
-					marker: marker,
-					getValue: function () {
-						return {
-							lat: $latInput.val(),
-							lng: $lngInput.val()
-						};
-					},
-					setValue: function (lat, lng) {
-						lat = lat * 1;
-						lng = lng * 1;
-						$latInput.val(lat);
-						$lngInput.val(lng);
-						marker.set('coordinate', new nokia.maps.geo.Coordinate(lat, lng));
-						trigger(lat, lng);
-					}
+				shape.map.objects.add(shape.marker);
+				shape._onSetValue = function (lat, lng) {
+					this.marker.set('coordinate', new nokia.maps.geo.Coordinate(lat, lng));
 				};
+
+				shape.map.setCenter(coordinate);
+				shape.map.setZoomLevel(options.zoom);
+
+				if (!options.disabled) {
+					shape.marker.addListener('dragend', function () {
+						shape.fill(shape.coordinate.latitude, shape.coordinate.longitude);
+					}, false);
+
+					var timeout;
+					shape.map.addListener('click', function (e) {
+						if (timeout) {
+							clearTimeout(timeout);
+						}
+						timeout = setTimeout(function () {
+							var coordinate = shape.map.pixelToGeo(e.displayX, e.displayY);
+							shape.marker.set('coordinate', coordinate);
+							shape.fill(coordinate.latitude, coordinate.longitude);
+						}, 200);
+					});
+					shape.map.addListener('mapviewchangestart', function (e) {
+						if (timeout) {
+							clearTimeout(timeout);
+							timeout = null;
+						}
+					});
+				}
 			}
 		}
 	},
@@ -277,109 +212,53 @@ var drivers = {
 			return map;
 		},
 		shapes: {
-			point: function ($el, $inputs, map, options) {
-				var $latInput = $inputs.filter('[id$=lat]');
-				var $lngInput = $inputs.filter('[id$=lng]');
-				var trigger = function (lat, lng) {
-					$el.trigger('change.gpspicker', [{
-						lat: lat,
-						lng: lng
-					}]);
-				};
-
-				var position = SMap.Coords.fromWGS84($lngInput.val() * 1, $latInput.val() * 1);
+			point: function (shape, options) {
+				var val = shape.getValue();
+				var position = SMap.Coords.fromWGS84(val.lng * 1, val.lat * 1);
 
 				var layer = new SMap.Layer.Marker();
-				map.addLayer(layer);
+				shape.map.addLayer(layer);
 				layer.enable();
 
-				var marker = new SMap.Marker(position, '', {});
+				shape.marker = new SMap.Marker(position, '', {});
 				if (!options.disabled) {
 					var mouse = new SMap.Control.Mouse(SMap.MOUSE_PAN | SMap.MOUSE_WHEEL | SMap.MOUSE_ZOOM);
-					map.addControl(mouse);
-					marker.decorate(SMap.Marker.Feature.Draggable);
+					shape.map.addControl(mouse);
+					shape.marker.decorate(SMap.Marker.Feature.Draggable);
 				}
-				layer.addMarker(marker);
-
-				map.setCenterZoom(position, options.zoom);
-
-				if (options.disabled) {
-					return {
-						marker: marker,
-						getValue: function () {
-							return {
-								lat: $latInput.val(),
-								lng: $lngInput.val()
-							};
-						}
-					};
-				}
-
-				var signals = map.getSignals();
-				signals.addListener(window, 'marker-drag-stop', function (e) {
-					var coords = e.target.getCoords().toWGS84();
-					$latInput.val(coords[1]);
-					$lngInput.val(coords[0]);
-					trigger(coords[1], coords[0]);
-				});
-
-				var timeout;
-				signals.addListener(map, 'map-click', function (e) {
-					if (timeout) {
-						clearTimeout(timeout);
-					}
-					timeout = setTimeout(function () {
-						var coords = SMap.Coords.fromEvent(e.data.event, map);
-						marker.setCoords(coords);
-						coords = coords.toWGS84();
-						$latInput.val(coords[1]);
-						$lngInput.val(coords[0]);
-						trigger(coords[1], coords[0]);
-					}, 200);
-				});
-				signals.addListener(map, 'zoom-start', function (e) {
-					if (timeout) {
-						clearTimeout(timeout);
-						timeout = null;
-					}
-				});
-
-				/*if (options.search) {
-					google.maps.event.addListener(options.search, 'place_changed', function () {
-						var place = options.search.getPlace();
-						if (!place.geometry) return;
-
-						var location = place.geometry.location;
-						if (place.geometry.viewport) {
-							map.fitBounds(place.geometry.viewport);
-						} else {
-							map.setCenter(location);
-							map.setZoom(17);
-						}
-						marker.setPosition(location);
-						$latInput.val(location.lat());
-						$lngInput.val(location.lng());
-						trigger(location.lat(), location.lng());
-					});
-				}*/
-
-				return {
-					marker: marker,
-					getValue: function () {
-						return {
-							lat: $latInput.val(),
-							lng: $lngInput.val()
-						};
-					},
-					setValue: function (lat, lng) {
-						lat = lat * 1;
-						lng = lng * 1;
-						$latInput.val(lat);
-						$lngInput.val(lng);
-						marker.setCoords(SMap.Coords.fromWGS84(lat, lng));
-						trigger(lat, lng);
-					}
+				layer.addMarker(shape.marker);
+				shape._onSetValue = function (lat, lng) {
+					this.marker.setCoords(SMap.Coords.fromWGS84(lng, lat));
 				};
+
+				shape.map.setCenterZoom(position, options.zoom);
+
+				if (!options.disabled) {
+					var signals = shape.map.getSignals();
+					signals.addListener(window, 'marker-drag-stop', function (e) {
+						var coords = e.target.getCoords().toWGS84();
+						shape.fill(coords[1], coords[0]);
+					});
+
+					var timeout;
+					signals.addListener(shape.map, 'map-click', function (e) {
+						if (timeout) {
+							clearTimeout(timeout);
+						}
+						timeout = setTimeout(function () {
+							var coords = SMap.Coords.fromEvent(e.data.event, shape.map);
+							shape.marker.setCoords(coords);
+							coords = coords.toWGS84();
+							shape.fill(coords[1], coords[0]);
+						}, 200);
+					});
+					signals.addListener(shape.map, 'zoom-start', function (e) {
+						if (timeout) {
+							clearTimeout(timeout);
+							timeout = null;
+						}
+					});
+				}
 			}
 		}
 	}
@@ -445,9 +324,10 @@ var GpsPicker = function () {
 			options.search = driver.search($search);
 		}
 
-		return $el.data('gpspicker', $.extend({
-			map: map
-		}, driver.shapes[options.shape]($el, $inputs, map, options) || {}));
+		var shape = new shapes[options.shape]($el, $inputs);
+		shape.map = map;
+		driver.shapes[options.shape](shape, options);
+		return $el.data('gpspicker', shape);
 	};
 
 	$(function () {

@@ -243,6 +243,7 @@ abstract class GpsPicker extends BaseControl
 			'type' => $this->type,
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
+			'disabled' => $this->isDisabled(),
 		);
 
 		if ($this->manualInput) {
