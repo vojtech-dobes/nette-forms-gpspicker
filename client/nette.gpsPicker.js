@@ -17,7 +17,8 @@ var SMap = window.SMap;
 var $ = window.jQuery;
 var Nette = window.Nette;
 
-if ((!google && !nokia && !SMap) || !$) {
+if (!$) {
+	console.error("'nette-forms-gpspicker' requires jQuery.");
 	return;
 }
 
@@ -54,6 +55,7 @@ var shapes = {
 
 var drivers = {
 	google: {
+		isSupported: !!google,
 		createMap: function ($container, options) {
 			return new google.maps.Map($container[0], {
 				mapTypeId: google.maps.MapTypeId[options.type] || google.maps.MapTypeId.ROADMAP
@@ -119,6 +121,7 @@ var drivers = {
 		}
 	},
 	nokia: {
+		isSupported: !!nokia,
 		createMap: function ($container, options) {
 			if (options.type === 'ROADMAP') {
 				options.type = 'NORMAL';
@@ -196,6 +199,7 @@ var drivers = {
 		}
 	},
 	seznam: {
+		isSupported: !!SMap,
 		createMap: function ($container, options) {
 			var map = new SMap(
 				$container.get(0),
@@ -310,6 +314,10 @@ var GpsPicker = function () {
 		$el.find('label').hide();
 
 		var driver = drivers[options.driver];
+		if (!driver.isSupported) {
+			console.error("Driver '" + options.driver + "' misses appropriate API SDK.");
+			return $el;
+		}
 		var map = driver.createMap($mapContainer, options);
 
 		if (options.search && driver.search) {
