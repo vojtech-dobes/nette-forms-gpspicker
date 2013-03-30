@@ -20,10 +20,16 @@ class GpsPositionPicker extends GpsPicker
 			'lat' => array(
 				'label' => 'Latitude',
 				'rules' => array(GpsPicker::MAX_LAT, GpsPicker::MIN_LAT),
+				'attrs' => array(
+					'step' => 'any',
+				),
 			),
 			'lng' => array(
 				'label' => 'Longitude',
 				'rules' => array(GpsPicker::MAX_LNG, GpsPicker::MIN_LNG),
+				'attrs' => array(
+					'step' => 'any',
+				),
 			),
 		);
 	}

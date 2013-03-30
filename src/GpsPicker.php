@@ -204,6 +204,12 @@ abstract class GpsPicker extends BaseControl
 			return in_array($rule['op'], $options['rules']);
 		}))) ?: NULL);
 
+		if (isset($options['attrs'])) {
+			foreach ($options['attrs'] as $key => $value) {
+				$control->$key = $value;
+			}
+		}
+
 		return $control;
 	}
 
