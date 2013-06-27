@@ -61,6 +61,13 @@ class GpsPositionPicker extends GpsPicker
 
 
 
+	public function isFilled()
+	{
+		return $this->getValue() !== NULL;
+	}
+
+
+
 	public static function validateMaxLat(IControl $control, $maxLat)
 	{
 		return $control->getValue()->getLat() <= $maxLat;
