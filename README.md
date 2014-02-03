@@ -17,9 +17,15 @@ http://vojtechdobes.com/gpspicker/
 ## Installation
 
 1. Get the source code from Github or via Composer (`vojtech-dobes/nette-forms-gpspicker`).
-2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension for `$configurator`.
+2. Register `VojtechDobes\NetteForms\GpsPickerExtension` as extension.
 3. Link Google Maps API v3 (Places) and `client/nette.gpsPicker.js` in `app/templates/@layout.latte`.
 
+```neon
+extensions:
+	gpspicker: VojtechDobes\NetteForms\GpsPickerExtension
+```
+
+> In Nette 2.0, registration is done in `app/bootstrap.php`:
 ```php
 $configurator->onCompile[] = function ($configurator, $compiler) {
 	$compiler->addExtension('gpspicker', new VojtechDobes\NetteForms\GpsPickerExtension);
@@ -27,8 +33,8 @@ $configurator->onCompile[] = function ($configurator, $compiler) {
 ```
 
 ```html
-	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
-	<script type="text/javascript" src="{$basePath}/libs/nette.gpsPicker.js"></script>
+	<script src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+	<script src="{$basePath}/libs/nette.gpsPicker.js"></script>
 </body>
 ```
 

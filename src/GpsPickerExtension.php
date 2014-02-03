@@ -2,8 +2,15 @@
 
 namespace VojtechDobes\NetteForms;
 
-use Nette\Config\CompilerExtension;
-use Nette\Utils\PhpGenerator\ClassType;
+use Nette\DI;
+use Nette\PhpGenerator;
+
+if (!class_exists('Nette\DI\CompilerExtension')) {
+	class_alias('Nette\Config\CompilerExtension', 'Nette\DI\CompilerExtension');
+}
+if (!class_exists('Nette\PhpGenerator\ClassType')) {
+	class_alias('Nette\Utils\PhpGenerator\ClassType', 'Nette\PhpGenerator\ClassType');
+}
 
 
 /**
@@ -11,7 +18,7 @@ use Nette\Utils\PhpGenerator\ClassType;
  *
  * @author Vojtěch Dobeš
  */
-class GpsPickerExtension extends CompilerExtension
+class GpsPickerExtension extends DI\CompilerExtension
 {
 
 	public function loadConfiguration()
@@ -24,7 +31,7 @@ class GpsPickerExtension extends CompilerExtension
 
 
 
-	public function afterCompile(ClassType $class)
+	public function afterCompile(PhpGenerator\ClassType $class)
 	{
 		$initialize = $class->methods['initialize'];
 		$initialize->addBody('VojtechDobes\NetteForms\GpsPositionPicker::register();');
