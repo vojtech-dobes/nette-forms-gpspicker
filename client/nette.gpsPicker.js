@@ -179,25 +179,6 @@ var drivers = {
 			}
 		}
 	},
-	openstreetmap: {
-		createMap: function ($container, options) {
-			var map = new google.maps.Map($container[0], {
-				mapTypeId: 'OSM',
-				mapTypeControlOptions: {
-					mapTypeIds: []
-				}
-			});
-			map.mapTypes.set('OSM', new google.maps.ImageMapType({
-				getTileUrl: function(coord, zoom) {
-					return 'http://tile.openstreetmap.org/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
-				},
-				tileSize: new google.maps.Size(256, 256),
-				name: 'OpenStreetMap',
-				maxZoom: 18
-			}));
-			return map;
-		}
-	},
 	seznam: {
 		isSupported: !!SMap,
 		createMap: function ($container, options) {
@@ -266,6 +247,27 @@ var drivers = {
 			}
 		}
 	}
+};
+drivers.openstreetmap = {
+	isSupported: !!google,
+	createMap: function ($container, options) {
+		var map = new google.maps.Map($container[0], {
+			mapTypeId: 'OSM',
+			mapTypeControlOptions: {
+				mapTypeIds: []
+			}
+		});
+		map.mapTypes.set('OSM', new google.maps.ImageMapType({
+			getTileUrl: function(coord, zoom) {
+				return 'http://tile.openstreetmap.org/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
+			},
+			tileSize: new google.maps.Size(256, 256),
+			name: 'OpenStreetMap',
+			maxZoom: 18
+		}));
+		return map;
+	},
+	shapes: drivers.google.shapes
 };
 
 var GpsPicker = function () {
