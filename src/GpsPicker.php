@@ -81,6 +81,12 @@ abstract class GpsPicker extends BaseControl
 	 */
 	private $addressRetrieval = FALSE;
 
+	/**
+	 * Should be manual input of coordinates be allowed?
+	 * @var bool
+	 */
+	private $manualInput = FALSE;
+
 	/** @var Html */
 	private $searchControlPrototype;
 
@@ -94,7 +100,7 @@ abstract class GpsPicker extends BaseControl
 
 	/**
 	 * Stores caption and sets default value
-	 * 
+	 *
 	 * @param  string caption
 	 * @param  array|mixed options
 	 */
@@ -107,7 +113,7 @@ abstract class GpsPicker extends BaseControl
 
 		parent::__construct($caption);
 		$this->control->type = 'text';
-	
+
 		$options = (array) $options;
 		if (isset($options['size'])) {
 			$this->setSize($options['size']['x'], $options['size']['y']);
@@ -120,13 +126,16 @@ abstract class GpsPicker extends BaseControl
 				$this->{'set' . ucfirst($key)}($options[$key]);
 			}
 		}
+		if (isset($options['manualInput'])) {
+			$this->manualInput = (bool) $options['manualInput'];
+		}
 	}
 
 
 
 	/**
 	 * Returns coordinates enveloped in Gps instance
-	 * 
+	 *
 	 * @return \stdClass
 	 */
 	public function getValue()
@@ -142,7 +151,7 @@ abstract class GpsPicker extends BaseControl
 
 	/**
 	 * Finalizes and returns control's element
-	 * 
+	 *
 	 * @return Html
 	 */
 	public function getControl($onlyContainer = FALSE)
@@ -162,7 +171,7 @@ abstract class GpsPicker extends BaseControl
 			}
 		}
 
-		$container->data('nette-gpspicker', $this->prepareDataAttributes(array(
+		$attrs = array(
 			'size' => array(
 				'x' => $this->size['x'],
 				'y' => $this->size['y'],
@@ -172,7 +181,13 @@ abstract class GpsPicker extends BaseControl
 			'search' => $this->showSearch,
 			'shape' => $this->getShape(),
 			'useGoogle' => $this->useGoogle,
-		)));
+		);
+
+		if ($this->manualInput) {
+			$attrs['manualInput'] = $this->manualInput;
+		}
+
+		$container->data('nette-gpspicker', $this->prepareDataAttributes($attrs));
 
 		return $container;
 	}
@@ -223,7 +238,7 @@ abstract class GpsPicker extends BaseControl
 			$label->setText($this->translate('Address'));
 			return $label;
 		}
-		
+
 		$parts = $this->getParts();
 		if (!isset($parts[$name])) {
 			throw new InvalidArgumentException(get_class($this) . " doesn't have part called '$name'.");
@@ -268,11 +283,11 @@ abstract class GpsPicker extends BaseControl
 
 	/**
 	 * Transforms array to form suitable for data attributes
-	 * 
+	 *
 	 * from Nette/Forms/Controls/BaseControl.php:385
 	 *
 	 * @param  array $data
-	 * @return string 
+	 * @return string
 	 */
 	private function prepareDataAttributes(array $data)
 	{
@@ -394,6 +409,34 @@ abstract class GpsPicker extends BaseControl
 	public function disableSearch()
 	{
 		$this->showSearch = FALSE;
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Enables manual input of coordinates
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function enableManualInput()
+	{
+		$this->manualInput = TRUE;
+
+		return $this;
+	}
+
+
+
+	/**
+	 * Disables manual input of coordinates
+	 *
+	 * @return GpsPicker provides a fluent interface
+	 */
+	public function disableManualInput()
+	{
+		$this->manualInput = FALSE;
 
 		return $this;
 	}

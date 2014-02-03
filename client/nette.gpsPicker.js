@@ -1,9 +1,9 @@
 /**
  * Unobtrusive handler for GpsPicker
- * 
+ *
  * @author Vojtěch Dobeš
  * @license New BSD
- * 
+ *
  * @dependency jQuery
  * @dependency Google Maps V3
  * @dependency netteForms.js
@@ -52,7 +52,18 @@ var GpsPicker = function () {
 			height: typeof y == 'number' ? y + 'px' : y,
 			position: 'relative'
 		}).prependTo($el);
-		var $inputs = $el.find('input:not([id$=search])').hide();
+		var $inputs = $el.find('input:not([id$=search])');
+		if (!options.manualInput) {
+			$inputs.hide();
+		} else {
+			$inputs.on('change.gpspicker input.gpspicker', function () {
+				var args = [];
+				$inputs.each(function () {
+					args.push($(this).val());
+				});
+				$el.data('gpspicker').setValue.apply($el.data('gpspicker'), args);
+			});
+		}
 		$el.find('label').hide();
 
 		if (options.search) {
