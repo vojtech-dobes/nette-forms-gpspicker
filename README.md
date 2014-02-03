@@ -162,7 +162,7 @@ $form->addGpsPicker('coords', 'Coordinates:', array(
 ));
 ```
 
-### Drivers
+### Providers
 
 If you are afraid of exhausting API rate limit of Google Maps, you can use alternative provider as well. All you have to do is to link their appropriate API SDK and set the driver:
 
@@ -173,13 +173,25 @@ $form->addGpsPicker('coords', 'Coordinates:')
 
 Available providers are:
 
-##### `Gps::DRIVER_GOOGLE` (search: yes)
+#### Google
+
+| Feature           | Value |
+| :---------------- | :------------------- |
+| Usage             | default (manually by calling `->setDriver(Gps::DRIVER_GOOGLE)`) |
+| Search by address | yes |
+| Supported types   | `Gps::TYPE_ROADMAP`, `Gps::TYPE_SATELLITE`, `Gps::TYPE_HYBRID`, `Gps::TYPE_TERRAIN` |
 
 ```html
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
 ```
 
-##### `Gps::DRIVER_NOKIA` (search: no)
+#### Nokia
+
+| Feature           | Value |
+| :---------------- | :------------------- |
+| Usage             | `->setDriver(Gps::DRIVER_NOKIA)` |
+| Search by address | no |
+| Supported types   | `Gps::TYPE_NORMAL`, `Gps::TYPE_SATELLITE`, `Gps::TYPE_TERRAIN` |
 
 ```html
 <script src="http://api.maps.nokia.com/2.2.1/jsl.js?with=all" charset="utf-8"></script>
@@ -189,13 +201,25 @@ Available providers are:
 </script>
 ```
 
-##### `Gps::DRIVER_OPENSTREETMAP` (search: no)
+#### OpenStreetMap
+
+| Feature           | Value |
+| :---------------- | :------------------- |
+| Usage             | `->setDriver(Gps::DRIVER_OPENSTREETMAP)` |
+| Search by address | no |
+| Supported types   | `Gps::TYPE_ROADMAP`, `Gps::TYPE_SATELLITE`, `Gps::TYPE_HYBRID`, `Gps::TYPE_TERRAIN` |
 
 ```html
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
 ```
 
-##### `Gps::DRIVER_SEZNAM` (search: no)
+#### Seznam (Mapy.cz)
+
+| Feature           | Value |
+| :---------------- | :------------------- |
+| Usage             | `->setDriver(Gps::DRIVER_SEZNAM)` |
+| Search by address | no |
+| Supported types   | `Gps::TYPE_BASE`, `Gps::TYPE_BIKE`, `Gps::TYPE_HISTORIC`, `Gps::TYPE_HYBRID`,<br>`Gps::TYPE_OPHOTO`, `Gps::TYPE_TRAIL`, `Gps::TYPE_TURIST` |
 
 ```html
 <script src="http://api4.mapy.cz/loader.js"></script>
