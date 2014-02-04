@@ -3,6 +3,7 @@
 namespace VojtechDobes\NetteForms;
 
 use Nette\Forms\Container;
+use Nette\Forms\Form;
 use Nette\Forms\IControl;
 
 
@@ -13,6 +14,33 @@ use Nette\Forms\IControl;
  */
 class GpsPositionPicker extends GpsPicker
 {
+
+	/** @var float */
+	private $lat = 50.083;
+
+	/** @var float */
+	private $lng = 14.423;
+
+
+
+	protected function getSupportedDrivers()
+	{
+		return array(
+			self::DRIVER_GOOGLE,
+			self::DRIVER_NOKIA,
+			self::DRIVER_OPENSTREETMAP,
+			self::DRIVER_SEZNAM,
+		);
+	}
+
+
+
+	protected function getShape()
+	{
+		return 'point';
+	}
+
+
 
 	protected function getParts()
 	{
@@ -36,35 +64,38 @@ class GpsPositionPicker extends GpsPicker
 
 
 
-	protected function getSupportedDrivers()
+	public function loadHttpData()
 	{
-		return array(
-			self::DRIVER_GOOGLE,
-			self::DRIVER_NOKIA,
-			self::DRIVER_OPENSTREETMAP,
-			self::DRIVER_SEZNAM,
-		);
+		parent::loadHttpData();
+		$this->lat = $this->getHttpData(Form::DATA_LINE, '[lat]');
+		$this->lng = $this->getHttpData(Form::DATA_LINE, '[lng]');
 	}
 
 
 
-	protected function getShape()
+	/**
+	 * Returns coordinates enveloped in Gps instance
+	 *
+	 * @return GpsPoint
+	 */
+	public function getValue()
 	{
-		return 'point';
+		return new GpsPoint($this->lat, $this->lng, $this->search);
 	}
 
 
 
-	protected function getDefaultValue()
+	public function setValue($coordinates)
 	{
-		return array('lat' => 50.083, 'lng' => 14.423);
-	}
-
-
-
-	protected function createValue($args)
-	{
-		return new GpsPoint($args['lat'], $args['lng'], isset($args['search']) ? $args['search'] : NULL);
+		if ($coordinates instanceof GpsPoint || $coordinates instanceof \stdClass) {
+			$this->lat = $coordinates->lat;
+			$this->lng = $coordinates->lng;
+		} elseif (isset($coordinates['lat'])) {
+			$this->lat = (float) $coordinates['lat'];
+			$this->lng = (float) $coordinates['lng'];
+		} else {
+			list($this->lat, $this->lng) = $coordinates;
+		}
 	}
 
 

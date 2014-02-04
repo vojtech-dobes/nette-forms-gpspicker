@@ -55,6 +55,9 @@ abstract class GpsPicker extends BaseControl
 	const DEFAULT_TYPE = self::TYPE_ROADMAP;
 	const DEFAULT_USE_GOOGLE = TRUE;
 
+	/** @var string|NULL */
+	protected $search;
+
 	/**
 	 * Default size
 	 * @var array
@@ -195,18 +198,9 @@ abstract class GpsPicker extends BaseControl
 
 
 
-	/**
-	 * Returns coordinates enveloped in Gps instance
-	 *
-	 * @return \stdClass
-	 */
-	public function getValue()
+	public function loadHttpData()
 	{
-		$filter = $this->getParts();
-		if ($this->addressRetrieval) {
-			$filter['search'] = TRUE;
-		}
-		return $this->createValue(array_intersect_key(parent::getValue() ?: $this->getDefaultValue(), $filter));
+		$this->search = $this->getHttpData(Form::DATA_LINE, '[search]');
 	}
 
 
@@ -536,24 +530,6 @@ abstract class GpsPicker extends BaseControl
 	 * @return string[] [name => label]
 	 */
 	abstract protected function getParts();
-
-
-
-	/**
-	 * Should return default value
-	 *
-	 * @return array
-	 */
-	abstract protected function getDefaultValue();
-
-
-
-	/**
-	 * Should create instance of correct value representation
-	 *
-	 * @return
-	 */
-	abstract protected function createValue($args);
 
 }
 
