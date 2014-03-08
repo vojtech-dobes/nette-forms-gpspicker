@@ -92,6 +92,11 @@
 							shape.fill(e.latLng.lat(), e.latLng.lng());
 						});
 						var timeout;
+
+						if (options.search) {
+							geocoder = new google.maps.Geocoder();
+						}
+
 						google.maps.event.addListener(shape.map, 'click', function(e) {
 							timeout = setTimeout(function() {
 								shape.marker.setPosition(e.latLng);
