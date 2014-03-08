@@ -90,11 +90,13 @@ class GpsPositionPicker extends GpsPicker
 		if ($coordinates instanceof GpsPoint || $coordinates instanceof \stdClass) {
 			$this->lat = $coordinates->lat;
 			$this->lng = $coordinates->lng;
+			$this->search = $coordinates->address;
 		} elseif (isset($coordinates['lat'])) {
 			$this->lat = (float) $coordinates['lat'];
 			$this->lng = (float) $coordinates['lng'];
+			$this->search = $coordinates['address'];
 		} else {
-			list($this->lat, $this->lng) = $coordinates;
+			list($this->lat, $this->lng, $this->search) = $coordinates;
 		}
 	}
 
