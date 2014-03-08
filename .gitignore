@@ -1,1 +1,4 @@
 *sublime*
+nbproject
+vendor
+composer.lock

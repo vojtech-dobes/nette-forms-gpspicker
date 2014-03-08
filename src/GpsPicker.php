@@ -2,12 +2,11 @@
 
 namespace VojtechDobes\NetteForms;
 
-use Nette\Forms\Form;
-use Nette\Forms\Container;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Forms\Form;
+use Nette\Forms\Helpers;
 use Nette\InvalidArgumentException;
 use Nette\Utils\Html;
-use Traversable;
 
 
 /**
@@ -321,6 +320,7 @@ abstract class GpsPicker extends BaseControl
 				'name' => $control->name . '[search]',
 				'class' => 'gpspicker-search',
 				'style' => 'display:none',
+				'value' => $this->search
 			));
 		}
 		return $this->searchControlPrototype;
@@ -331,9 +331,10 @@ abstract class GpsPicker extends BaseControl
 	private function getExportedRules()
 	{
 		if (!isset($this->exportedRules)) {
-			$this->exportedRules = self::exportRules($this->rules);
+			$this->exportedRules = Helpers::exportRules($this->rules);
 		}
-		return $this->exportedRules;
+
+		return $this->exportedRules !== NULL ? $this->exportedRules : [];
 	}
 
 
