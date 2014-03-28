@@ -15,11 +15,14 @@ use Nette\Forms\IControl;
 class GpsPositionPicker extends GpsPicker
 {
 
-	/** @var float */
-	private $lat = 50.083;
+	const DEFAULT_LAT = 50.083;
+	const DEFAULT_LNG = 14.423;
 
 	/** @var float */
-	private $lng = 14.423;
+	private $lat = self::DEFAULT_LAT;
+
+	/** @var float */
+	private $lng = self::DEFAULT_LNG;
 
 
 
@@ -87,7 +90,11 @@ class GpsPositionPicker extends GpsPicker
 
 	public function setValue($coordinates)
 	{
-		if ($coordinates instanceof GpsPoint || $coordinates instanceof \stdClass) {
+		if ($coordinates === NULL) {
+			$this->lat = self::DEFAULT_LAT;
+			$this->lng = self::DEFAULT_LNG;
+			$this->search = NULL;
+		} elseif ($coordinates instanceof GpsPoint || $coordinates instanceof \stdClass) {
 			$this->lat = $coordinates->lat;
 			$this->lng = $coordinates->lng;
 			$this->search = $coordinates->address;
