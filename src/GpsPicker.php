@@ -214,8 +214,7 @@ abstract class GpsPicker extends BaseControl
 	{
 		$control = parent::getControl();
 		$container = Html::el('div');
-		$id = $control->id;
-		$name = $control->name;
+		$container->id = $control->id;
 
 		if (!$onlyContainer) {
 			if ($this->showSearch) {
