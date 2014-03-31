@@ -97,13 +97,14 @@ class GpsPositionPicker extends GpsPicker
 		} elseif ($coordinates instanceof GpsPoint || $coordinates instanceof \stdClass) {
 			$this->lat = $coordinates->lat;
 			$this->lng = $coordinates->lng;
-			$this->search = $coordinates->address;
-		} elseif (isset($coordinates['lat'])) {
+			$this->search = isset($coordinates->address) ? $coordinates->address : NULL;
+		} elseif (isset($coordinates['lat']) && isset($coordinates['lng'])) {
 			$this->lat = (float) $coordinates['lat'];
 			$this->lng = (float) $coordinates['lng'];
-			$this->search = $coordinates['address'];
+			$this->search = isset($coordinates['address']) ? $coordinates['address'] : NULL;
 		} else {
-			list($this->lat, $this->lng, $this->search) = $coordinates;
+			list($this->lat, $this->lng) = $coordinates;
+			$this->search = isset($coordinates[2]) ? $coordinates[2] : NULL;
 		}
 	}
 
