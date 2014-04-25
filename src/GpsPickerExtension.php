@@ -34,7 +34,7 @@ class GpsPickerExtension extends DI\CompilerExtension
 		$container = $this->getContainerBuilder();
 
 		$latte = $container->getDefinition('nette.latte');
-		$latte->addSetup('VojtechDobes\NetteForms\GpsPickerMacros::install(?->compiler)', array('@self'));
+		$latte->addSetup('VojtechDobes\NetteForms\GpsPickerMacros::install(?->getCompiler())', array('@self'));
 	}
 
 
