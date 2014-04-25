@@ -104,6 +104,8 @@ class GpsPositionPicker extends GpsPicker
 		} else {
 			list($this->lat, $this->lng, $this->search) = $coordinates;
 		}
+
+		return $this;
 	}
 
 
