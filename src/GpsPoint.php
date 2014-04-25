@@ -32,6 +32,7 @@ class GpsPoint extends Nette\Object
 	public function __construct($lat, $lng = NULL, $address = NULL)
 	{
 		if (is_array($lat)) {
+			$address = $lng;
 			$lng = $lat['lng'];
 			$lat = $lat['lat'];
 		} elseif ($lng === NULL) {
@@ -39,7 +40,7 @@ class GpsPoint extends Nette\Object
 		}
 		$this->lat = (float) $lat;
 		$this->lng = (float) $lng;
-		$this->address = (string) $address ?: NULL;
+		$this->address = ((string) $address) ?: NULL;
 	}
 
 
