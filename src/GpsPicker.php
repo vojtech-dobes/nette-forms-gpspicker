@@ -214,8 +214,7 @@ abstract class GpsPicker extends BaseControl
 	{
 		$control = parent::getControl();
 		$container = Html::el('div');
-		$id = $control->id;
-		$name = $control->name;
+		$container->id = $control->id;
 
 		if (!$onlyContainer) {
 			if ($this->showSearch) {
@@ -320,10 +319,10 @@ abstract class GpsPicker extends BaseControl
 				'id' => $control->id . '-search',
 				'name' => $control->name . '[search]',
 				'class' => 'gpspicker-search',
-				'style' => 'display:none',
-				'value' => $this->search,
+				'style' => 'display:none'
 			));
 		}
+		$this->searchControlPrototype->value = $this->search;
 		return $this->searchControlPrototype;
 	}
 
