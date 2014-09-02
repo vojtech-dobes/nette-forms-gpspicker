@@ -2,7 +2,11 @@
 
 namespace VojtechDobes\NetteForms;
 
-use Nette\Latte;
+use Latte;
+
+if (class_exists('Nette\Latte\Compiler') && !class_exists('Latte\Compiler')) {
+	class_alias('Nette\Latte\Compiler', 'Latte\Compiler');
+}
 
 
 /**
