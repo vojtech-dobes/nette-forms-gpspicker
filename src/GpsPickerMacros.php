@@ -4,7 +4,7 @@ namespace VojtechDobes\NetteForms;
 
 use Latte;
 
-if (class_exists('Nette\Latte\Compiler') && !class_exists('Latte\Compiler')) {
+if (!class_exists('Latte\Compiler') && class_exists('Nette\Latte\Compiler')) {
 	class_alias('Nette\Latte\Compiler', 'Latte\Compiler');
 }
 
