@@ -313,7 +313,7 @@ var GpsPicker = function () {
 				$el.data('gpspicker').setValue.apply($el.data('gpspicker'), args);
 			});
 		}
-		$el.find('label').hide();
+		$el.find('label:not([for$=search])').hide();
 
 		var driver = drivers[options.driver];
 		if (!driver.isSupported) {
