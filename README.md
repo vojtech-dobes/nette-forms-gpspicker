@@ -126,13 +126,11 @@ If the user doesn't support Javascript or gets offline, picker provides several 
 	...
 
 	{gpspicker coords}
-		{label lat}Latitude:{/label} {input lat}
-		{label lng}Longitude:{/label} {input lng}
+		{gpspicker:label lat}Latitude:{/gpspicker:label} {gpspicker:input lat}
+		{gpspicker:label lng}Longitude:{/gpspicker:label} {gpspicker:input lng}
 	{/gpspicker}
 {/form}
 ```
-
-Keep in mind that you cannot render any other inputs inside of `{gpspicker}` macro.
 
 ### Search by address
 
@@ -143,7 +141,7 @@ If you like to render it manually, use `search` key:
 
 ```html
 {gpspicker coords}
-	{label search /} {input search}
+	{gpspicker:label search /} {gpspicker:input search}
 {/gpspicker}
 ```
 

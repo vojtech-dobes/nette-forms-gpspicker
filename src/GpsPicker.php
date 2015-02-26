@@ -2,6 +2,7 @@
 
 namespace VojtechDobes\NetteForms;
 
+use Nette\Forms;
 use Nette\Forms\Form;
 use Nette\Forms\Container;
 use Nette\Forms\Controls\BaseControl;
@@ -19,12 +20,12 @@ abstract class GpsPicker extends BaseControl
 {
 
 	/** string validation rules */
-	const MAX_LAT = ':maxLat';
-	const MAX_LNG = ':maxLng';
-	const MIN_LAT = ':minLat';
-	const MIN_LNG = ':minLng';
-	const MAX_DISTANCE_FROM = ':maxDistanceFrom';
-	const MIN_DISTANCE_FROM = ':minDistanceFrom';
+	const MAX_LAT = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMaxLat';
+	const MAX_LNG = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMaxLng';
+	const MIN_LAT = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMinLat';
+	const MIN_LNG = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMinLng';
+	const MAX_DISTANCE_FROM = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMaxDistanceFrom';
+	const MIN_DISTANCE_FROM = 'VojtechDobes\NetteForms\GpsPositionPicker::validateMinDistanceFrom';
 
 	/** float */
 	const GREAT_CIRCLE_RADIUS = 6372.795;
@@ -331,7 +332,11 @@ abstract class GpsPicker extends BaseControl
 	private function getExportedRules()
 	{
 		if (!isset($this->exportedRules)) {
-			$this->exportedRules = self::exportRules($this->rules);
+			if (method_exists('Nette\Forms\Helpers', 'exportRules')) {
+				$this->exportedRules = Forms\Helpers::exportRules($this->rules);
+			} else {
+				$this->exportedRules = self::exportRules($this->rules);
+			}
 		}
 		return $this->exportedRules;
 	}

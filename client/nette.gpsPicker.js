@@ -352,16 +352,16 @@ var GpsPicker = function () {
 		}
 
 		if (Nette) {
-			Nette.validators.maxLat = function (elem, arg, value) {
+			Nette.validators.VojtechDobesNetteFormsGpsPositionPicker_validateMaxLat = function (elem, arg, value) {
 				return value <= arg;
 			};
-			Nette.validators.maxLng = function (elem, arg, value) {
+			Nette.validators.VojtechDobesNetteFormsGpsPositionPicker_validateMaxLng = function (elem, arg, value) {
 				return value <= arg;
 			};
-			Nette.validators.minLat = function (elem, arg, value) {
+			Nette.validators.VojtechDobesNetteFormsGpsPositionPicker_validateMinLat = function (elem, arg, value) {
 				return value >= arg;
 			};
-			Nette.validators.minLng = function (elem, arg, value) {
+			Nette.validators.VojtechDobesNetteFormsGpsPositionPicker_validateMinLng = function (elem, arg, value) {
 				return value >= arg;
 			};
 		}

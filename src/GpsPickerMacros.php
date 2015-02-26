@@ -21,8 +21,8 @@ class GpsPickerMacros extends Latte\Macros\MacroSet
 	{
 		$me = new static($compiler);
 		$me->addMacro('gpspicker', '$_gpspicker = $_form[%node.word]; $_gpspickerControl = $_gpspicker->getControl(TRUE); echo $_gpspickerControl->addAttributes(%node.array)->startTag()', 'echo $_gpspickerControl->endTag(); unset($_gpspicker, $_gpspickerControl)');
-		$me->addMacro('input', array($me, 'macroInput'));
-		$me->addMacro('label', array($me, 'macroLabel'), '?></label><?php');
+		$me->addMacro('gpspicker:input', array($me, 'macroInput'));
+		$me->addMacro('gpspicker:label', array($me, 'macroLabel'), '?></label><?php');
 	}
 
 
@@ -35,7 +35,8 @@ class GpsPickerMacros extends Latte\Macros\MacroSet
 			}
 			$node = $node->parentNode;
 		}
-		return FALSE;
+		
+		throw new CompileException('{gpspicker:input} can be used only within {gpspicker} macro.');
 	}
 
 
@@ -54,7 +55,8 @@ class GpsPickerMacros extends Latte\Macros\MacroSet
 			}
 			$node = $node->parentNode;
 		}
-		return FALSE;
+
+		throw new CompileException('{gpspicker:label} can be used only within {gpspicker} macro.');
 	}
 
 }
