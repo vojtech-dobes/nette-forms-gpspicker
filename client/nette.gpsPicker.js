@@ -347,8 +347,16 @@ var GpsPicker = function () {
 		];
 		var stylesheet = window.document.styleSheets[0];
 		var method = stylesheet.cssRules ? 'insertRule' : 'addRule';
+		var cssRules = stylesheet.cssRules || stylesheet.rules;
+		var index = 0;
+		for (var i = 0; i < cssRules.length; i++) {
+			if (cssRules[i].type !== CSSRule.IMPORT_RULE && cssRules[i].type !== CSSRule.CHARSET_RULE) {
+				break;
+			}
+			index++;
+		}
 		for (var i = 0; i < rules.length; i++) {
-			stylesheet[method].call(stylesheet,	 rules[i], 0);
+			stylesheet[method].call(stylesheet, rules[i], index++);
 		}
 
 		if (Nette) {
