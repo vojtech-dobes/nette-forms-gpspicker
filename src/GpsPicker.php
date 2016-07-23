@@ -219,11 +219,11 @@ abstract class GpsPicker extends BaseControl
 
 		if (!$onlyContainer) {
 			if ($this->showSearch) {
-				$container->add((string) $this->getSearchControlPrototype());
+				$container->addHtml((string) $this->getSearchControlPrototype());
 			}
 
 			foreach ($this->getParts() as $part => $options) {
-				$container->add((string) $this->getPartialControl($part));
+				$container->addHtml((string) $this->getPartialControl($part));
 			}
 		}
 
@@ -333,9 +333,9 @@ abstract class GpsPicker extends BaseControl
 	{
 		if (!isset($this->exportedRules)) {
 			if (method_exists('Nette\Forms\Helpers', 'exportRules')) {
-				$this->exportedRules = Forms\Helpers::exportRules($this->rules);
+				$this->exportedRules = Forms\Helpers::exportRules($this->getRules());
 			} else {
-				$this->exportedRules = self::exportRules($this->rules);
+				$this->exportedRules = self::exportRules($this->getRules());
 			}
 		}
 		return $this->exportedRules;
